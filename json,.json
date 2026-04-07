@@ -1,0 +1,119 @@
+{
+    "kpis_operativos": {
+        "pacientes_activos": 818,
+        "visitas_hoy": [],
+        "ordenes_vigentes": 12966,
+        "equipos_en_uso": 310,
+        "tutelas_activas": 25
+    },
+    "gestion_visitas": {
+        "efectividad_mes": [
+            {
+                "estado": "COMPLETADA",
+                "total_visitas": 58
+            }
+        ],
+        "carga_profesionales": [
+            {
+                "nombre_completo": "ANDRES MORA",
+                "total_visitas_asignadas": 48
+            },
+            {
+                "nombre_completo": "DELGADO HIGUERA LEONARDO JEISON",
+                "total_visitas_asignadas": 3
+            },
+            {
+                "nombre_completo": "GONZALEZ SIERRA LISETH VIVIANA",
+                "total_visitas_asignadas": 3
+            }
+        ],
+        "visitas_especialidad": [
+            {
+                "especialidad": "Medicina Domiciliaria",
+                "total_visitas": 598
+            }
+        ]
+    },
+    "demografia": {
+        "pacientes_aseguradora": [
+            {
+                "aseguradora": "SANITAS",
+                "total_pacientes": 781
+            },
+            {
+                "aseguradora": "COMFAORIENTE",
+                "total_pacientes": 28
+            }
+        ],
+        "piramide_poblacional": [
+            {
+                "sexo": "M",
+                "rango_edad": "0-17 años",
+                "cantidad": 41
+            },
+            {
+                "sexo": "F",
+                "rango_edad": "0-17 años",
+                "cantidad": 33
+            },
+            {
+                "sexo": "M",
+                "rango_edad": "18-35 años",
+                "cantidad": 27
+            }
+        ],
+        "top_diagnosticos": [
+            {
+                "descripcion": "DEMENCIA EN LA ENFERMEDAD DE ALZHEIMER NO ESPECIFICADA",
+                "total_casos": 10
+            },
+            {
+                "descripcion": "INCONTINENCIA FECAL",
+                "total_casos": 7
+            },
+            {
+                "descripcion": "ENFERMEDAD DE PARKINSON -",
+                "total_casos": 6
+            }
+        ]
+    },
+    "gestion_recursos": {
+        "estado_solicitudes": [
+            {
+                "estado": "ENTREGADA",
+                "cantidad_solicitudes": 310
+            }
+        ],
+        "modalidad_equipos": [
+            {
+                "modalidad": "PROPIO",
+                "cantidad": 160
+            },
+            {
+                "modalidad": "MIXTO",
+                "cantidad": 150
+            }
+        ],
+        "laboratorios_pendientes": [
+            {
+                "id_laboratorio": 113,
+                "paciente": "MARIA DURAN DE SANCHEZ",
+                "fecha_toma_programada": "1899-12-22 00:00:00"
+            },
+            {
+                "id_laboratorio": 117,
+                "paciente": "LEANDRO GALVIS MORENO",
+                "fecha_toma_programada": "1899-12-22 00:00:00"
+            }
+        ]
+    },
+    "control_calidad": {
+        "promedio_dias_entrega": "54.1304",
+        "efectividad_laboratorios": {
+            "laboratorios_confirmados": 246,
+            "total_laboratorios": 246,
+            "porcentaje_efectividad": "100.0000"
+        },
+        "demanda_telexperticia": []
+    }
+}
