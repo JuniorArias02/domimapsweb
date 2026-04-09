@@ -11,6 +11,16 @@ export const obtenerPacientesMapa = async (params = {}) => {
 };
 
 /**
+ * Fetch ALL patients for map visualization without pagination
+ * @param {Object} params - Query params (id_zona, id_comuna, id_aseguradora, estado)
+ * @returns {Promise} Resolves to list of patients
+ */
+export const obtenerPacientesMapaTodos = async (params = {}) => {
+  const response = await api.get('/mapas/pacientes/puntos/todos', { params });
+  return response.data;
+};
+
+/**
  * Fetch detailed patient data for the map sidebar
  * @param {number|string} id - Patient ID
  * @returns {Promise} Resolves to detailed response
@@ -64,6 +74,15 @@ export const obtenerRutasVisitas = async (params = {}) => {
  */
 export const obtenerComunas = async () => {
   const response = await api.get('/comunas');
+  return response.data;
+};
+/**
+ * Fetch optimized routes for a professional
+ * @param {Object} params - mes, anio, id_personal
+ * @returns {Promise} Resolves to list of projected visits
+ */
+export const obtenerRutasOptimizadas = async (params = {}) => {
+  const response = await api.get('/mapas/rutas-optimizadas', { params });
   return response.data;
 };
 

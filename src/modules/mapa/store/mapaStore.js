@@ -56,6 +56,24 @@ export const useMapaStore = create((set) => ({
   setTipoVistaPacientes: (tipo) => set({ tipoVistaPacientes: tipo }),
   setFiltroComunaId: (id) => set({ filtroComunaId: id }),
 
+  // --- Optimized Routes State ---
+  isRutasOptimizadasMenuOpen: false,
+  toggleRutasOptimizadasMenu: () => set((state) => ({ 
+    isRutasOptimizadasMenuOpen: !state.isRutasOptimizadasMenuOpen,
+    // Close other professional menus to avoid UI overlapping
+    isProfesionalesMenuOpen: false
+  })),
+  rutasOptimizadasFilters: {
+    mes: new Date().getMonth() + 1,
+    anio: new Date().getFullYear(),
+    id_personal: ''
+  },
+  setRutasOptimizadasFilters: (filters) => set((state) => ({
+    rutasOptimizadasFilters: { ...state.rutasOptimizadasFilters, ...filters }
+  })),
+  mostrarRutasOptimizadas: false,
+  setMostrarRutasOptimizadas: (val) => set({ mostrarRutasOptimizadas: val }),
+
   profesionalesFilters: {
     page: 1,
     per_page: 200,

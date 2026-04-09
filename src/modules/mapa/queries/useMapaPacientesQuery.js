@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { obtenerPacientesMapa } from '../services/mapaService';
+import { obtenerPacientesMapaTodos } from '../services/mapaService';
 import { useMapaStore } from '../store/mapaStore';
 
 export const useMapaPacientesQuery = () => {
@@ -9,11 +9,12 @@ export const useMapaPacientesQuery = () => {
   return useQuery({
     queryKey: ['mapa_pacientes_puntos', pacientesFilters],
     queryFn: () => {
-      // Clean up empty params
+      // Clean up empty params (exclude pagination params since we now fetch all)
+      const { page, per_page, ...restFilters } = pacientesFilters;
       const params = Object.fromEntries(
-        Object.entries(pacientesFilters).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+        Object.entries(restFilters).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
       );
-      return obtenerPacientesMapa(params);
+      return obtenerPacientesMapaTodos(params);
     },
     // Only fetch if we are actually showing patients
     enabled: mostrarPacientes,

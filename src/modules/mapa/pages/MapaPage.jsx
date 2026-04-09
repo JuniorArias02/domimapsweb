@@ -1,7 +1,8 @@
 import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Phone, MapPin, User } from 'lucide-react';
+import '../resources/MapClusters.css';
+import { Phone, MapPin, User, TrendingUp } from 'lucide-react';
 import { useMapaStore } from '../store/mapaStore';
 import MapSidebar from '../components/MapSidebar';
 import MapPacientesMenu from '../components/MapPacientesMenu';
@@ -9,11 +10,15 @@ import MapProfesionalesMenu from '../components/MapProfesionalesMenu';
 import MapDetallePaciente from '../components/MapDetallePaciente';
 import MapComunasMenu from '../components/MapComunasMenu';
 import MapPacientesComunaMenu from '../components/MapPacientesComunaMenu';
+import MapRutasOptimizadasMenu from '../components/MapRutasOptimizadasMenu';
 import { comunas } from '../constants/comunas';
 import { useMapaPacientesQuery } from '../queries/useMapaPacientesQuery';
 import { usePacientesComunaQuery } from '../queries/usePacientesComunaQuery';
 import { useRutasVisitasQuery } from '../queries/useRutasVisitasQuery';
+import { useRutasOptimizadasQuery } from '../queries/useRutasOptimizadasQuery';
 import { useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import { useMapIcons } from '../hooks/useMapIcons';
 
 
 
@@ -31,80 +36,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl,
 });
 
-// --- Custom Icons Definitions ---
-
-// Estilo Dorado para el Checkpoint Principal
-const checkpointIcon = L.divIcon({
-  className: 'custom-div-icon',
-  html: `
-    <div style="
-      background-color: #EAB308; 
-      width: 14px; 
-      height: 14px; 
-      border-radius: 50%; 
-      border: 3px solid white; 
-      box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
-    "></div>
-  `,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-});
-
-// Estilo para Pacientes (Azul con Pulso)
-const createPatientIcon = (isSelected) => L.divIcon({
-  className: 'custom-div-icon',
-  html: `
-    <div class="relative flex items-center justify-center">
-      ${isSelected ? `
-        <div class="absolute w-8 h-8 bg-blue-500/30 rounded-full animate-ping"></div>
-      ` : ''}
-      <div style="
-        background-color: ${isSelected ? '#2563EB' : '#60A5FA'}; 
-        width: ${isSelected ? '16px' : '12px'}; 
-        height: ${isSelected ? '16px' : '12px'}; 
-        border-radius: 50%; 
-        border: 2px solid white; 
-        box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
-        transition: all 0.3s;
-      "></div>
-    </div>
-  `,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
-});
-
-// Estilo para Puntos de Ruta del Profesional
-const createProfessionalVisitIcon = (order, dateColor) => L.divIcon({
-  className: 'custom-div-icon',
-  html: `
-    <div class="relative flex items-center justify-center group cursor-pointer">
-      <div style="
-        background-color: ${dateColor}; 
-        width: 24px; 
-        height: 24px; 
-        border-radius: 50%; 
-        border: 2px solid white; 
-        box-shadow: 0 0 10px ${dateColor}60;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 900;
-        font-size: 11px;
-        transition: all 0.3s;
-      " class="group-hover:scale-110">${order}</div>
-    </div>
-  `,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
-});
+// --- Cleaned up Icons - Now in useMapIcons hook ---
 
 // Componente para manejar el centrado del mapa
-const ChangeView = ({ center, zoom }) => {
+const ChangeView = React.memo(({ center, zoom }) => {
   const map = useMap();
-  map.setView(center, zoom, { animate: true });
+  React.useEffect(() => {
+     map.setView(center, zoom, { animate: true });
+  }, [center, zoom, map]);
   return null;
-};
+});
 
 
 
@@ -120,8 +61,11 @@ const MapaPage = () => {
     seleccionarPaciente,
     selectedComunas,
     tipoVistaPacientes,
-    filtroComunaId 
+    filtroComunaId,
+    mostrarRutasOptimizadas 
   } = useMapaStore();
+
+  const { checkpointIcon, patientIconRegular, patientIconSelected, createProfessionalVisitIcon } = useMapIcons();
   
   // Data (usa la query paginada)
   const { data: mapaData } = useMapaPacientesQuery();
@@ -134,6 +78,10 @@ const MapaPage = () => {
   // RUTAS PROFESIONALES: Agrupar por fecha_realizada
   const { data: rutasData } = useRutasVisitasQuery();
   const visitas = rutasData?.data || [];
+
+  // RUTAS OPTIMIZADAS (PROYECTADAS)
+  const { data: rutasOptimizadasData } = useRutasOptimizadasQuery();
+  const visitasOptimizadas = rutasOptimizadasData?.data || [];
 
   // Lógica de centrado inteligente
   const selectedPac = pacientesPuntos.find(p => p.id_paciente === selectedPacienteId);
@@ -148,6 +96,12 @@ const MapaPage = () => {
   } else if (mostrarProfesionales && firstVisit?.latitud) {
     mapCenter = [parseFloat(firstVisit.latitud), parseFloat(firstVisit.longitud)];
     mapZoom = 14;
+  } else if (mostrarRutasOptimizadas && visitasOptimizadas.length > 0) {
+    const firstOpt = visitasOptimizadas.find(v => v.latitud && v.longitud);
+    if (firstOpt) {
+      mapCenter = [parseFloat(firstOpt.latitud), parseFloat(firstOpt.longitud)];
+      mapZoom = 14;
+    }
   }
 
   const dateColors = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4'];
@@ -155,6 +109,13 @@ const MapaPage = () => {
   const visitasByDay = visitas.reduce((acc, visit) => {
     if (!acc[visit.fecha_realizada]) acc[visit.fecha_realizada] = [];
     acc[visit.fecha_realizada].push(visit);
+    return acc;
+  }, {});
+
+  const visitasOptinizadasByDay = visitasOptimizadas.reduce((acc, visit) => {
+    const dateStr = visit.fecha_proyectada.split(' ')[0];
+    if (!acc[dateStr]) acc[dateStr] = [];
+    acc[dateStr].push(visit);
     return acc;
   }, {});
 
@@ -168,6 +129,7 @@ const MapaPage = () => {
       <MapDetallePaciente />
       <MapComunasMenu />
       <MapPacientesComunaMenu />
+      <MapRutasOptimizadasMenu />
 
 
 
@@ -177,6 +139,7 @@ const MapaPage = () => {
         scrollWheelZoom={true}
         zoomControl={false}
         attributionControl={false}
+        preferCanvas={true}
         className="w-full h-[100dvh] absolute inset-0 z-0"
       >
         <ChangeView center={mapCenter} zoom={mapZoom} />
@@ -198,70 +161,127 @@ const MapaPage = () => {
 
 
         {/* Marcadores de Pacientes (OPCIÓN 1: GENERAL) */}
-        {mostrarPacientes && tipoVistaPacientes === 'GENERAL' && pacientesPuntos.map((pac, idx) => {
-          // Usa coordenadas reales. Si no existen, no renderiza marcador.
-          if (!pac.latitud || !pac.longitud) return null;
-          
-          const pacPosition = [parseFloat(pac.latitud), parseFloat(pac.longitud)];
+        {mostrarPacientes && tipoVistaPacientes === 'GENERAL' && (
+          <MarkerClusterGroup chunkedLoading removeOutsideVisibleBounds>
+            {pacientesPuntos.map((pac, idx) => {
+              if (!pac.latitud || !pac.longitud) return null;
+              const pacPosition = [parseFloat(pac.latitud), parseFloat(pac.longitud)];
+              const isSelected = selectedPacienteId === pac.id_paciente;
 
-          return (
-            <Marker 
-              key={pac.id_paciente || idx} 
-              position={pacPosition}
-              icon={createPatientIcon(selectedPacienteId === pac.id_paciente)}
-              eventHandlers={{
-                click: () => seleccionarPaciente(pac.id_paciente),
-              }}
-            >
-
-
-              <Popup>
-                <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1 flex items-center justify-between">
-                  <span>{pac.nombre_completo}</span>
-                  <div className="bg-green-100 text-green-700 p-1 rounded-full ml-2" title="Paciente Válido">
-                    <User size={12} strokeWidth={3} />
-                  </div>
-                </div>
-                {pac.estado && (
-                  <div className="text-[10px] text-gray-500 font-bold flex items-center gap-1.5 mt-1">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span> 
-                    {pac.estado}
-                  </div>
-                )}
-                <div className="text-[10px] text-gray-500 mt-2 font-mono">
-                  ID: {pac.id_paciente}
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+              return (
+                <Marker 
+                  key={`pac-gen-${pac.id_paciente || idx}`} 
+                  position={pacPosition}
+                  icon={isSelected ? patientIconSelected : patientIconRegular}
+                  eventHandlers={{
+                    click: () => seleccionarPaciente(pac.id_paciente),
+                  }}
+                >
+                  <Popup>
+                    <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1 flex items-center justify-between">
+                      <span>{pac.nombre_completo}</span>
+                      <div className="bg-green-100 text-green-700 p-1 rounded-full ml-2" title="Paciente Válido">
+                        <User size={12} strokeWidth={3} />
+                      </div>
+                    </div>
+                    {pac.estado && (
+                      <div className="text-[10px] text-gray-500 font-bold flex items-center gap-1.5 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span> 
+                        {pac.estado}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-gray-500 mt-2 font-mono">
+                      ID: {pac.id_paciente}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MarkerClusterGroup>
+        )}
 
         {/* Marcadores de Pacientes (OPCIÓN 2: POR COMUNA) */}
-        {mostrarPacientes && tipoVistaPacientes === 'POR_COMUNA' && pacientesComuna.map((pac, idx) => {
-          if (!pac.latitud || !pac.longitud) return null;
-          const pacPosition = [parseFloat(pac.latitud), parseFloat(pac.longitud)];
+        {mostrarPacientes && tipoVistaPacientes === 'POR_COMUNA' && (
+          <MarkerClusterGroup chunkedLoading removeOutsideVisibleBounds>
+            {pacientesComuna.map((pac, idx) => {
+              if (!pac.latitud || !pac.longitud) return null;
+              const pacPosition = [parseFloat(pac.latitud), parseFloat(pac.longitud)];
+              const isSelected = selectedPacienteId === pac.id_paciente;
+
+              return (
+                <Marker 
+                  key={`comuna-pac-${pac.id_paciente || idx}`} 
+                  position={pacPosition}
+                  icon={isSelected ? patientIconSelected : patientIconRegular}
+                  eventHandlers={{
+                    click: () => seleccionarPaciente(pac.id_paciente),
+                  }}
+                >
+                  <Popup>
+                    <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1 flex items-center justify-between">
+                      <span>{pac.nombre_completo}</span>
+                      <div className="bg-blue-100 text-blue-700 p-1 rounded-full ml-2" title="Paciente en Comuna">
+                        <MapPin size={12} strokeWidth={3} />
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 mt-2 font-mono">
+                      ID: {pac.id_paciente} | Cédula: {pac.identificacion}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MarkerClusterGroup>
+        )}
+
+        {/* Marcadores y Rutas de OPTIMIZACIÓN (INTELIGENCIA) */}
+        {mostrarRutasOptimizadas && Object.entries(visitasOptinizadasByDay).map(([fecha, visitsForDay], dayIdx) => {
+          visitsForDay.sort((a,b) => a.orden_visita - b.orden_visita);
+          const color = dateColors[dayIdx % dateColors.length];
+          
+          const validVisits = visitsForDay.filter(v => 
+            v.latitud && v.longitud && !isNaN(parseFloat(v.latitud)) && !isNaN(parseFloat(v.longitud))
+          );
+          
+          if (validVisits.length === 0) return null;
+          const positions = validVisits.map(v => [parseFloat(v.latitud), parseFloat(v.longitud)]);
 
           return (
-            <Marker 
-              key={`comuna-pac-${pac.id_paciente || idx}`} 
-              position={pacPosition}
-              icon={createPatientIcon(selectedPacienteId === pac.id_paciente)}
-              eventHandlers={{
-                click: () => seleccionarPaciente(pac.id_paciente),
-              }}
-            >
-              <Popup>
-                <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1 flex items-center justify-between">
-                  <span>{pac.nombre_completo}</span>
-                  <div className="bg-blue-100 text-blue-700 p-1 rounded-full ml-2" title="Paciente en Comuna">
-                    <MapPin size={12} strokeWidth={3} />
-                  </div>
-                </div>
-                <div className="text-[10px] text-gray-500 mt-2 font-mono">
-                  ID: {pac.id_paciente} | Cédula: {pac.identificacion}
-                </div>
-              </Popup>
-            </Marker>
+            <React.Fragment key={`opt-${fecha}`}>
+              <Polyline 
+                positions={positions} 
+                pathOptions={{ color: color, weight: 4, opacity: 0.9 }} 
+              />
+              
+              {validVisits.map((v) => (
+                <Marker 
+                  key={`opt-visita-${v.id_orden}`} 
+                  position={[parseFloat(v.latitud), parseFloat(v.longitud)]}
+                  icon={createProfessionalVisitIcon(v.orden_visita, color)}
+                >
+                  <Popup>
+                    <div className="bg-[#2563EB] text-white px-2 py-1 -mt-4 -mx-4 mb-2 rounded-t-lg font-black text-[10px] uppercase flex items-center gap-2">
+                       <TrendingUp size={12} /> Ruta Optimizada
+                    </div>
+                    <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1">
+                      {v.nombre_paciente}
+                    </div>
+                    <div className="text-[10px] text-gray-400 font-bold mb-1 uppercase">
+                       <span style={{color: color}}>Orden: {v.orden_visita}</span> | Proyectada: {fecha}
+                    </div>
+                    <div className="text-[10px] text-gray-500 mt-2 leading-[1.2] flex items-start gap-1">
+                      <MapPin size={10} className="flex-shrink-0 mt-0.5" />
+                      {v.direccion}
+                    </div>
+                    {v.observaciones_optimizacion && (
+                       <div className="mt-3 p-2 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 text-[9px] font-black uppercase italic">
+                         Nota: {v.observaciones_optimizacion}
+                       </div>
+                    )}
+                  </Popup>
+                </Marker>
+              ))}
+            </React.Fragment>
           );
         })}
 
