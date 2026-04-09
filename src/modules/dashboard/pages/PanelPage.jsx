@@ -126,10 +126,10 @@ export default function PanelPage() {
         </div>
       </div>
 
-      {/* Nueva Fila: Gestión Visitas, Aseguradoras y Calidad */}
+      {/* Nueva Fila: Gestión Visitas y Aseguradoras (Asimétrica) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Card 1: Carga Profesionales */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition-all">
+        {/* Card 1: Carga Profesionales (Más ancha) */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-black text-gray-900 text-lg leading-none">Carga de Trabajo</h3>
             <Briefcase size={20} className="text-blue-500" />
@@ -167,34 +167,6 @@ export default function PanelPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Card 3: Calidad */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="font-black text-gray-900 text-lg leading-none">Efectividad Labs</h3>
-            <Trophy size={20} className="text-amber-500" />
-          </div>
-          <div className="flex-1 flex flex-col justify-between gap-6">
-            <div className="bg-[#F9FAFB] p-5 rounded-3xl border border-gray-100">
-               <div className="flex justify-between items-end mb-3">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Meta: 95%</p>
-                  <p className="text-2xl font-black text-emerald-600 leading-none tracking-tighter">
-                    {parseFloat(data.control_calidad?.efectividad_laboratorios?.porcentaje_efectividad).toFixed(0)}%
-                  </p>
-               </div>
-               <div className="w-full bg-white h-3 rounded-full border border-gray-200 overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{ width: `${data.control_calidad?.efectividad_laboratorios?.porcentaje_efectividad}%` }} />
-               </div>
-            </div>
-            <div className="bg-gray-900 p-6 rounded-3xl text-center shadow-xl shadow-gray-200/50">
-               <div className="flex items-baseline justify-center gap-1">
-                 <p className="text-5xl font-black text-white tracking-tighter">{parseFloat(data.control_calidad?.promedio_dias_entrega).toFixed(1)}</p>
-                 <span className="text-sm font-black text-emerald-400 uppercase tracking-widest">Días</span>
-               </div>
-               <p className="text-[9px] font-bold text-gray-500 mt-2 uppercase tracking-tighter italic">Entrega Promedio</p>
-            </div>
           </div>
         </div>
       </div>

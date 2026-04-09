@@ -31,6 +31,8 @@ export default function MapPacientesMenu() {
   const comunas = comunasData?.data || [];
   const aseguradoras = aseguradorasData?.data || [];
 
+  const { tipoVistaPacientes } = useMapaStore();
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     if (name === 'id_zona') {
@@ -43,7 +45,7 @@ export default function MapPacientesMenu() {
     }
   };
 
-  if (!mostrarPacientes) return null;
+  if (!mostrarPacientes || tipoVistaPacientes !== 'GENERAL') return null;
 
   return (
     <div 

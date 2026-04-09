@@ -49,11 +49,30 @@ export const obtenerAseguradoras = async () => {
 };
 
 /**
- * Fetch routes of visits for a professional
- * @param {Object} params - Query params (fecha_inicio, fecha_fin, id_profesional, page, per_page)
- * @returns {Promise} Resolves to paginated response
- */
+  * Fetch routes of visits for a professional
+  * @param {Object} params - Query params (fecha_inicio, fecha_fin, id_profesional, page, per_page)
+  * @returns {Promise} Resolves to paginated response
+  */
 export const obtenerRutasVisitas = async (params = {}) => {
   const response = await api.get('/mapas/rutas-visitas', { params });
+  return response.data;
+};
+
+/**
+ * Fetch all comunas for global filtering
+ * @returns {Promise} Resolves to list of comunas
+ */
+export const obtenerComunas = async () => {
+  const response = await api.get('/comunas');
+  return response.data;
+};
+
+/**
+ * Fetch patients belonging to a specific comuna
+ * @param {number|string} id_comuna - Comuna ID
+ * @returns {Promise} Resolves to list of patients
+ */
+export const obtenerPacientesPorComuna = async (id_comuna) => {
+  const response = await api.get(`/mapas/comunas/${id_comuna}/pacientes`);
   return response.data;
 };

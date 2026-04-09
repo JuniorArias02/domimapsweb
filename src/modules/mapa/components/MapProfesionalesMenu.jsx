@@ -24,7 +24,7 @@ export default function MapProfesionalesMenu() {
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef(null);
 
-  const { data: queryResult, isLoading, isError } = useRutasVisitasQuery();
+  const { data: queryResult, isLoading, isFetching, isError } = useRutasVisitasQuery();
   const { data: personalResult, isLoading: isLoadingPersonal } = usePersonalQuery();
   
   const data = queryResult || { data: [], total: 0, last_page: 1 };
@@ -36,7 +36,7 @@ export default function MapProfesionalesMenu() {
     p.id_personal.toString().includes(searchTerm)
   );
 
-  const profesionalSeleccionado = personalList.find(p => p.id_personal === profesionalesFilters.id_profesional);
+  const profesionalSeleccionado = personalList.find(p => String(p.id_personal) === String(profesionalesFilters.id_profesional));
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,7 +63,7 @@ export default function MapProfesionalesMenu() {
 
   return (
     <div 
-      className={`absolute top-20 bottom-0 w-85 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${
+      className={`absolute top-20 bottom-0 w-98 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${
         isMapSidebarOpen ? 'left-80' : 'left-0'
       } ${
         isProfesionalesMenuOpen ? 'translate-x-0' : '-translate-x-full'
@@ -163,15 +163,15 @@ export default function MapProfesionalesMenu() {
                       <div 
                         key={p.id_personal}
                         onClick={() => handleSelectProfessional(p)}
-                        className={`p-3 px-4 flex items-center justify-between cursor-pointer transition-all hover:bg-emerald-50 group/item ${profesionalesFilters.id_profesional === p.id_personal ? 'bg-emerald-50/50' : ''}`}
+                        className={`p-3 px-4 flex items-center justify-between cursor-pointer transition-all hover:bg-emerald-50 group/item ${String(profesionalesFilters.id_profesional) === String(p.id_personal) ? 'bg-emerald-50/50' : ''}`}
                       >
                         <div className="flex flex-col">
-                          <span className={`text-[12px] font-black uppercase ${profesionalesFilters.id_profesional === p.id_personal ? 'text-emerald-600' : 'text-gray-700'} group-hover/item:text-emerald-700`}>
+                          <span className={`text-[12px] font-black uppercase ${String(profesionalesFilters.id_profesional) === String(p.id_personal) ? 'text-emerald-600' : 'text-gray-700'} group-hover/item:text-emerald-700`}>
                             {p.nombre_completo}
                           </span>
                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">ID: {p.id_personal} | {p.tipo_documento}: {p.numero_documento || 'N/A'}</span>
                         </div>
-                        {profesionalesFilters.id_profesional === p.id_personal && (
+                        {String(profesionalesFilters.id_profesional) === String(p.id_personal) && (
                           <Check size={16} className="text-emerald-500" />
                         )}
                       </div>
@@ -230,7 +230,7 @@ export default function MapProfesionalesMenu() {
           <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
             Resultados {data?.total ? `(${data.total})` : ''}
           </span>
-          {isLoading && (
+          {(isLoading || isFetching) && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
               <span className="text-[10px] font-bold text-emerald-500">Cargando</span>

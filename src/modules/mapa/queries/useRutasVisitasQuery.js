@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useMapaStore } from '../store/mapaStore';
 import { obtenerRutasVisitas } from '../services/mapaService';
 
@@ -7,10 +7,18 @@ export const useRutasVisitasQuery = () => {
 
   return useQuery({
     queryKey: ['rutasVisitas', profesionalesFilters],
-    queryFn: () => obtenerRutasVisitas(profesionalesFilters),
-    // Only fetch if layer is active and we have an ID to search
+    queryFn: () => {
+      // Limpiar parámetros vacíos pero asegurar que los necesarios se envíen
+      const params = Object.fromEntries(
+        Object.entries(profesionalesFilters).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+      );
+      
+      console.log('Fetching rutas with params:', params);
+      return obtenerRutasVisitas(params);
+    },
+    // Solo fetching si la capa está activa y hay un profesional seleccionado
     enabled: mostrarProfesionales && !!profesionalesFilters.id_profesional, 
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
   });
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Phone, MapPin, User } from 'lucide-react';
 import { useMapaStore } from '../store/mapaStore';
@@ -7,7 +7,11 @@ import MapSidebar from '../components/MapSidebar';
 import MapPacientesMenu from '../components/MapPacientesMenu';
 import MapProfesionalesMenu from '../components/MapProfesionalesMenu';
 import MapDetallePaciente from '../components/MapDetallePaciente';
+import MapComunasMenu from '../components/MapComunasMenu';
+import MapPacientesComunaMenu from '../components/MapPacientesComunaMenu';
+import { comunas } from '../constants/comunas';
 import { useMapaPacientesQuery } from '../queries/useMapaPacientesQuery';
+import { usePacientesComunaQuery } from '../queries/usePacientesComunaQuery';
 import { useRutasVisitasQuery } from '../queries/useRutasVisitasQuery';
 import { useMap } from 'react-leaflet';
 
@@ -109,20 +113,42 @@ const MapaPage = () => {
   const position = [7.886053739251232, -72.497568179007]; // Bogotá como punto de inicio por defecto
   
   // Estado modular del mapa
-  const { mostrarPacientes, mostrarProfesionales, selectedPacienteId, seleccionarPaciente } = useMapaStore();
+  const { 
+    mostrarPacientes, 
+    mostrarProfesionales, 
+    selectedPacienteId, 
+    seleccionarPaciente,
+    selectedComunas,
+    tipoVistaPacientes,
+    filtroComunaId 
+  } = useMapaStore();
   
   // Data (usa la query paginada)
   const { data: mapaData } = useMapaPacientesQuery();
   const pacientesPuntos = mapaData?.data || [];
 
-  // Buscar coordenadas del paciente seleccionado para centrar
-  const selectedPac = pacientesPuntos.find(p => p.id_paciente === selectedPacienteId);
-  const mapCenter = selectedPac?.latitud ? [parseFloat(selectedPac.latitud), parseFloat(selectedPac.longitud)] : position;
-  const mapZoom = selectedPac?.latitud ? 16 : 13;
+  // Data Opción 2: Pacientes por Comuna específica
+  const { data: pacientesComunaData } = usePacientesComunaQuery(filtroComunaId);
+  const pacientesComuna = pacientesComunaData?.data || [];
 
   // RUTAS PROFESIONALES: Agrupar por fecha_realizada
   const { data: rutasData } = useRutasVisitasQuery();
   const visitas = rutasData?.data || [];
+
+  // Lógica de centrado inteligente
+  const selectedPac = pacientesPuntos.find(p => p.id_paciente === selectedPacienteId);
+  const firstVisit = visitas.find(v => v.latitud && v.longitud);
+
+  let mapCenter = position;
+  let mapZoom = 13;
+
+  if (selectedPac?.latitud) {
+    mapCenter = [parseFloat(selectedPac.latitud), parseFloat(selectedPac.longitud)];
+    mapZoom = 16;
+  } else if (mostrarProfesionales && firstVisit?.latitud) {
+    mapCenter = [parseFloat(firstVisit.latitud), parseFloat(firstVisit.longitud)];
+    mapZoom = 14;
+  }
 
   const dateColors = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4'];
 
@@ -140,6 +166,8 @@ const MapaPage = () => {
       <MapPacientesMenu />
       <MapProfesionalesMenu />
       <MapDetallePaciente />
+      <MapComunasMenu />
+      <MapPacientesComunaMenu />
 
 
 
@@ -169,8 +197,8 @@ const MapaPage = () => {
         </Marker>
 
 
-        {/* Marcadores de Pacientes reales del Backend */}
-        {mostrarPacientes && pacientesPuntos.map((pac, idx) => {
+        {/* Marcadores de Pacientes (OPCIÓN 1: GENERAL) */}
+        {mostrarPacientes && tipoVistaPacientes === 'GENERAL' && pacientesPuntos.map((pac, idx) => {
           // Usa coordenadas reales. Si no existen, no renderiza marcador.
           if (!pac.latitud || !pac.longitud) return null;
           
@@ -208,14 +236,49 @@ const MapaPage = () => {
           );
         })}
 
+        {/* Marcadores de Pacientes (OPCIÓN 2: POR COMUNA) */}
+        {mostrarPacientes && tipoVistaPacientes === 'POR_COMUNA' && pacientesComuna.map((pac, idx) => {
+          if (!pac.latitud || !pac.longitud) return null;
+          const pacPosition = [parseFloat(pac.latitud), parseFloat(pac.longitud)];
+
+          return (
+            <Marker 
+              key={`comuna-pac-${pac.id_paciente || idx}`} 
+              position={pacPosition}
+              icon={createPatientIcon(selectedPacienteId === pac.id_paciente)}
+              eventHandlers={{
+                click: () => seleccionarPaciente(pac.id_paciente),
+              }}
+            >
+              <Popup>
+                <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1 flex items-center justify-between">
+                  <span>{pac.nombre_completo}</span>
+                  <div className="bg-blue-100 text-blue-700 p-1 rounded-full ml-2" title="Paciente en Comuna">
+                    <MapPin size={12} strokeWidth={3} />
+                  </div>
+                </div>
+                <div className="text-[10px] text-gray-500 mt-2 font-mono">
+                  ID: {pac.id_paciente} | Cédula: {pac.identificacion}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
         {/* Marcadores y Rutas de Profesionales */}
         {mostrarProfesionales && Object.entries(visitasByDay).map(([fecha, visitsForDay], dayIdx) => {
           // Ordenar por orden_visita
           visitsForDay.sort((a,b) => a.orden_visita - b.orden_visita);
           const color = dateColors[dayIdx % dateColors.length];
           
-          // Filtrar coordenadas válidas
-          const validVisits = visitsForDay.filter(v => v.latitud !== null && v.longitud !== null);
+          // Filtrar coordenadas válidas (que no sean null, undefined o NaN)
+          const validVisits = visitsForDay.filter(v => 
+            v.latitud && 
+            v.longitud && 
+            !isNaN(parseFloat(v.latitud)) && 
+            !isNaN(parseFloat(v.longitud))
+          );
+          
           if (validVisits.length === 0) return null;
           
           const positions = validVisits.map(v => [parseFloat(v.latitud), parseFloat(v.longitud)]);
@@ -251,6 +314,32 @@ const MapaPage = () => {
                 </Marker>
               ))}
             </React.Fragment>
+          );
+        })}
+
+        {/* Capas de Comunas (Polígonos) */}
+        {selectedComunas.map((comunaId) => {
+          const info = comunas[comunaId];
+          if (!info) return null;
+          
+          return (
+            <Polygon
+              key={comunaId}
+              positions={info.coords}
+              pathOptions={{
+                fillColor: info.color,
+                fillOpacity: 0.3,
+                color: info.color,
+                weight: 2,
+                dashArray: '5, 5'
+              }}
+            >
+              <Popup>
+                <div className="font-black text-xs uppercase text-gray-800">
+                  {info.nombre}
+                </div>
+              </Popup>
+            </Polygon>
           );
         })}
 

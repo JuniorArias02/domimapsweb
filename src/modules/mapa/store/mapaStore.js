@@ -49,12 +49,19 @@ export const useMapaStore = create((set) => ({
       pacientesFilters: { ...state.pacientesFilters, page }
     })),
 
+  // --- Nueva Opción: Pacientes por Comuna (Opción 2) ---
+  tipoVistaPacientes: 'GENERAL', // 'GENERAL' o 'POR_COMUNA'
+  filtroComunaId: '', 
+  
+  setTipoVistaPacientes: (tipo) => set({ tipoVistaPacientes: tipo }),
+  setFiltroComunaId: (id) => set({ filtroComunaId: id }),
+
   profesionalesFilters: {
     page: 1,
-    per_page: 50,
+    per_page: 200,
     id_profesional: '', // para filtrar por profesional
-    fecha_inicio: '', // fecha atencion A
-    fecha_fin: '',    // fecha atencion B
+    fecha_inicio: new Date().toISOString().split('T')[0], // fecha atencion A (Hoy)
+    fecha_fin: new Date().toISOString().split('T')[0],    // fecha atencion B (Hoy)
   },
 
   setProfesionalesFilters: (newFilters) => 
@@ -76,6 +83,24 @@ export const useMapaStore = create((set) => ({
   }),
   setDetalleSidebarOpen: (isOpen) => set({ isDetalleSidebarOpen: isOpen }),
   cerrarDetalle: () => set({ selectedPacienteId: null, isDetalleSidebarOpen: false }),
+
+  // --- Capa de Comunas ---
+  isComunasMenuOpen: false,
+  selectedComunas: [], // IDs de las comunas seleccionadas ['comuna1', 'comuna2', ...]
+  
+  toggleComunasMenu: () => set((state) => ({ 
+    isComunasMenuOpen: !state.isComunasMenuOpen,
+    // Close others to keep UI clean
+    ...( !state.isComunasMenuOpen ? { isPacientesMenuOpen: false, isProfesionalesMenuOpen: false } : {} )
+  })),
+  
+  toggleComunaSelection: (comunaId) => set((state) => ({
+    selectedComunas: state.selectedComunas.includes(comunaId)
+      ? state.selectedComunas.filter(id => id !== comunaId)
+      : [...state.selectedComunas, comunaId]
+  })),
+
+  setComunasSelected: (comunasIds) => set({ selectedComunas: comunasIds }),
 
   // Espacio para futuras funcionalidades
 }));
