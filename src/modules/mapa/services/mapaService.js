@@ -76,15 +76,7 @@ export const obtenerComunas = async () => {
   const response = await api.get('/comunas');
   return response.data;
 };
-/**
- * Fetch optimized routes for a professional
- * @param {Object} params - mes, anio, id_personal
- * @returns {Promise} Resolves to list of projected visits
- */
-export const obtenerRutasOptimizadas = async (params = {}) => {
-  const response = await api.get('/mapas/rutas-optimizadas', { params });
-  return response.data;
-};
+
 
 /**
  * Fetch patients belonging to a specific comuna
@@ -93,5 +85,16 @@ export const obtenerRutasOptimizadas = async (params = {}) => {
  */
 export const obtenerPacientesPorComuna = async (id_comuna) => {
   const response = await api.get(`/mapas/comunas/${id_comuna}/pacientes`);
+  return response.data;
+};
+
+
+
+/**
+ * Fetch global optimized routes (Patient Route Optimization)
+ * @param {Object} params - mes, anio
+ */
+export const obtenerRutasOptimizadasGlobal = async (params = {}) => {
+  const response = await api.get('/mapas/rutas-optimizadas-global', { params });
   return response.data;
 };

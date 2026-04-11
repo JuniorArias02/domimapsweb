@@ -78,3 +78,19 @@
 .marker-cluster span {
 	line-height: 30px;
 	}
+
+/* Ruler Tooltip Styles */
+.ruler-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.ruler-tooltip::before {
+  display: none !important;
+}
+
+.ruler-point-icon {
+  z-index: 1000 !important;
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMapaStore } from '../store/mapaStore';
+import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { comunas } from '../constants/comunas';
 import { 
   X, Building2, Eye, EyeOff, CheckSquare, Minimize2, Map as MapIcon, Power
@@ -8,15 +8,17 @@ import {
 export default function MapComunasMenu() {
   const { 
     isMapSidebarOpen,
-    isComunasMenuOpen, 
-    toggleComunasMenu,
+    activeMenuId,
+    setActiveMenu,
     selectedComunas,
     toggleComunaSelection,
     setComunasSelected,
     isDetalleSidebarOpen
   } = useMapaStore();
 
-  if (!isComunasMenuOpen) return null;
+  const isMenuOpen = activeMenuId === MENU_IDS.COMUNAS;
+
+  if (!isMenuOpen) return null;
 
   const allComunasIds = Object.keys(comunas);
   const isAllSelected = selectedComunas.length === allComunasIds.length;
@@ -32,7 +34,7 @@ export default function MapComunasMenu() {
   return (
     <div 
       className={`absolute top-20 bottom-0 w-85 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 right-0 ${
-        isComunasMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* Header - Matching MapPacientesMenu style */}
@@ -46,7 +48,7 @@ export default function MapComunasMenu() {
         </div>
         <div className="flex items-center gap-1">
           <button 
-            onClick={toggleComunasMenu}
+            onClick={() => setActiveMenu(null)}
             title="Desactivar capa"
             className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50"
           >

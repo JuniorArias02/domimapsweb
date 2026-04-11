@@ -1,25 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useMapaStore } from '../store/mapaStore';
+import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useRutasVisitasQuery } from '../queries/useRutasVisitasQuery';
 import { usePersonalQuery } from '../../personal/queries/usePersonalQuery';
 import { 
   X, Search, Filter, ChevronLeft, ChevronRight, 
   BriefcaseMedical, MapPin, Minimize2, Power, Calendar, User,
-  ChevronDown, Check
+  ChevronDown, Check, Zap, Trash2, ArrowRight
 } from 'lucide-react';
+import { calculateTotalDistance, optimizeRouteNearestNeighbor } from '../utils/routeUtils';
 
 export default function MapProfesionalesMenu() {
   const { 
     isMapSidebarOpen,
     mostrarProfesionales,
-    isProfesionalesMenuOpen, 
-    setProfesionalesMenuOpen,
+    activeMenuId,
+    setActiveMenu,
     profesionalesFilters,
     setProfesionalesFilters,
     setProfesionalesPage,
-    toggleMostrarProfesionales 
+    toggleMostrarProfesionales,
+    setLocalOptimization,
+    clearLocalOptimization,
+    isComparingLocalRoute,
+    distanciaOriginal,
+    distanciaOptimizada
   } = useMapaStore();
 
+  const isMenuOpen = activeMenuId === MENU_IDS.PROFESIONALES;
+ 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef(null);
@@ -48,6 +56,13 @@ export default function MapProfesionalesMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Limpiar optimización si cambian los filtros
+  useEffect(() => {
+    if (isComparingLocalRoute) {
+      clearLocalOptimization();
+    }
+  }, [profesionalesFilters.id_profesional, profesionalesFilters.fecha_inicio, profesionalesFilters.fecha_fin]);
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setProfesionalesFilters({ [name]: value });
@@ -59,6 +74,28 @@ export default function MapProfesionalesMenu() {
     setSearchTerm('');
   };
 
+  const canOptimize = profesionalesFilters.id_profesional && profesionalesFilters.fecha_inicio && profesionalesFilters.fecha_fin && data?.data?.length > 0;
+
+  const handleOptimize = () => {
+    if (!canOptimize) return;
+    
+    const originalRoute = data.data.filter(v => v.latitud && v.longitud);
+    if (originalRoute.length === 0) return;
+
+    const optimized = optimizeRouteNearestNeighbor(originalRoute);
+    const dOriginal = calculateTotalDistance(originalRoute);
+    const dOptimized = calculateTotalDistance(optimized);
+
+    setLocalOptimization({
+      optimized,
+      distanciaOriginal: dOriginal,
+      distanciaOptimizada: dOptimized
+    });
+  };
+
+  const kmSaved = Math.max(0, distanciaOriginal - distanciaOptimizada).toFixed(2);
+  const percentSaved = distanciaOriginal > 0 ? ((kmSaved / distanciaOriginal) * 100).toFixed(1) : 0;
+
   if (!mostrarProfesionales) return null;
 
   return (
@@ -66,14 +103,14 @@ export default function MapProfesionalesMenu() {
       className={`absolute top-20 bottom-0 w-98 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${
         isMapSidebarOpen ? 'left-80' : 'left-0'
       } ${
-        isProfesionalesMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       {/* Viñeta para volver a abrir cuando está cerrado */}
       <button
-        onClick={() => setProfesionalesMenuOpen(true)}
+        onClick={() => setActiveMenu(MENU_IDS.PROFESIONALES)}
         className={`absolute top-24 w-10 h-14 bg-white border border-gray-200 border-l-0 rounded-r-xl shadow-md flex items-center justify-center text-gray-400 hover:text-[#10B981] hover:bg-gray-50 focus:outline-none transition-all duration-300 ${
-          isProfesionalesMenuOpen ? 'opacity-0 -right-5 pointer-events-none' : 'opacity-100 -right-10'
+          isMenuOpen ? 'opacity-0 -right-5 pointer-events-none' : 'opacity-100 -right-10'
         }`}
         title="Filtros de Profesionales"
       >
@@ -91,7 +128,7 @@ export default function MapProfesionalesMenu() {
         </div>
         <div className="flex items-center gap-1">
           <button 
-            onClick={() => setProfesionalesMenuOpen(false)}
+            onClick={() => setActiveMenu(null)}
             title="Minimizar panel"
             className="text-gray-400 hover:text-[#10B981] transition-colors p-2 rounded-xl hover:bg-emerald-50"
           >
@@ -221,6 +258,50 @@ export default function MapProfesionalesMenu() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Botón de Optimización */}
+        <div className="pt-2">
+          {!isComparingLocalRoute ? (
+            <button
+              disabled={!canOptimize}
+              onClick={handleOptimize}
+              className={`w-full py-4 px-6 rounded-2xl font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95 ${
+                canOptimize 
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20' 
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <Zap size={18} fill={canOptimize ? 'currentColor' : 'none'} />
+              Optimizar Ruta Actual
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Ahorro Estimado</span>
+                  <div className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                    -{percentSaved}%
+                  </div>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span className="text-2xl font-black text-gray-900 leading-none">{kmSaved}</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase mb-1">Kilómetros a horrados</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="text-[9px] font-bold text-gray-400 uppercase">Original: {distanciaOriginal.toFixed(2)} km</div>
+                  <div className="text-[9px] font-bold text-emerald-600 uppercase">Optimizada: {distanciaOptimizada.toFixed(2)} km</div>
+                </div>
+              </div>
+              <button
+                onClick={clearLocalOptimization}
+                className="w-full py-3 px-6 rounded-2xl bg-white border border-red-100 text-red-500 font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-red-50 transition-all"
+              >
+                <Trash2 size={16} />
+                Limpiar Optimización
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

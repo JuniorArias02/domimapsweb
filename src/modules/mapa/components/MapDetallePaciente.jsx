@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMapaStore } from '../store/mapaStore';
+import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useMapaDetallePacienteQuery } from '../queries/useMapaDetallePacienteQuery';
 import { 
   X, User, Phone, Mail, MapPin, Calendar, 
@@ -11,28 +11,25 @@ import {
 export default function MapDetallePaciente() {
   const { 
     selectedPacienteId, 
-    isDetalleSidebarOpen, 
     cerrarDetalle,
     isMapSidebarOpen,
-    isPacientesMenuOpen 
+    activeMenuId
   } = useMapaStore();
 
+  const isMenuOpen = activeMenuId === MENU_IDS.DETALLE_PACIENTE;
   const { data: detailData, isLoading, isError } = useMapaDetallePacienteQuery(selectedPacienteId);
 
   if (!selectedPacienteId) return null;
 
   const { paciente, ultima_visita, diagnosticos } = detailData?.data || {};
 
-  // Calculate left position based on other sidebars
-  // principal (80) + pacientes (80)
-  let leftPos = 0;
-  if (isMapSidebarOpen) leftPos += 320;
-  if (isPacientesMenuOpen) leftPos += 320;
+  // Calculate left position based on the main sidebar only (since menus are now exclusive)
+  let leftPos = isMapSidebarOpen ? 320 : 0;
 
   return (
     <div 
-      className={`absolute top-20 bottom-0 w-[400px] bg-white shadow-2xl z-[380] transition-all duration-300 flex flex-col border-l border-gray-100 ${
-        isDetalleSidebarOpen ? 'translate-x-0' : 'translate-x-full opacity-0 pointer-events-none'
+      className={`absolute top-20 bottom-0 w-[400px] bg-white shadow-2xl z-[410] transition-all duration-300 flex flex-col border-l border-gray-100 ${
+        isMenuOpen ? 'translate-x-0' : 'translate-x-full opacity-0 pointer-events-none'
       }`}
       style={{ left: `${leftPos}px` }}
     >

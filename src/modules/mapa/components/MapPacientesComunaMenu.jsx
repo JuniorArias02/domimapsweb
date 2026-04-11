@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useMapaStore } from '../store/mapaStore';
+import React from 'react';
+import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useTodoComunasQuery } from '../queries/useTodoComunasQuery';
 import { usePacientesComunaQuery } from '../queries/usePacientesComunaQuery';
 import { 
@@ -12,12 +12,26 @@ export default function MapPacientesComunaMenu() {
     tipoVistaPacientes,
     filtroComunaId,
     setFiltroComunaId,
+    setComunasSelected,
     seleccionarPaciente,
     toggleMostrarPacientes,
-    isMapSidebarOpen
+    isMapSidebarOpen,
+    activeMenuId,
+    setActiveMenu
   } = useMapaStore();
 
-  const [isOpen, setIsOpen] = useState(true);
+  const handleComunaChange = (id) => {
+    setFiltroComunaId(id);
+    if (id) {
+      const numericId = parseInt(id, 10);
+      const mapKey = !isNaN(numericId) ? `comuna${numericId}` : id;
+      setComunasSelected([mapKey]);
+    } else {
+      setComunasSelected([]);
+    }
+  };
+
+  const isMenuOpen = activeMenuId === MENU_IDS.PACIENTES_COMUNA;
 
   // Queries
   const { data: comunasData, isLoading: loadingComunas } = useTodoComunasQuery();
@@ -36,7 +50,7 @@ export default function MapPacientesComunaMenu() {
       className={`absolute top-20 bottom-0 w-85 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${
         isMapSidebarOpen ? 'left-80' : 'left-0'
       } ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
+        isMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       {/* Header */}
@@ -49,7 +63,7 @@ export default function MapPacientesComunaMenu() {
           <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Filtro de Sector Específico</p>
         </div>
         <button 
-          onClick={() => setIsOpen(false)}
+          onClick={() => setActiveMenu(null)}
           className="text-gray-400 hover:text-[#2563EB] p-2 rounded-xl transition-colors"
         >
           <X size={20} />
@@ -62,7 +76,7 @@ export default function MapPacientesComunaMenu() {
         <div className="relative group">
           <select 
             value={filtroComunaId}
-            onChange={(e) => setFiltroComunaId(e.target.value)}
+            onChange={(e) => handleComunaChange(e.target.value)}
             className="w-full text-[13px] font-black p-4 pl-12 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500 transition-all text-gray-700 appearance-none cursor-pointer hover:border-gray-200"
           >
             <option value="">Seleccione una comuna...</option>
@@ -167,9 +181,9 @@ export default function MapPacientesComunaMenu() {
       </div>
 
       {/* Overlay toggle slider button (visible when closed) */}
-      {!isOpen && (
+      {!isMenuOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => setActiveMenu(MENU_IDS.PACIENTES_COMUNA)}
           className="absolute top-24 w-10 h-14 bg-white border border-gray-200 border-l-0 rounded-r-xl shadow-md flex items-center justify-center text-gray-400 hover:text-[#2563EB] hover:bg-gray-50 focus:outline-none transition-all -right-10"
         >
           <Building2 size={20} />

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useMapaStore } from '../store/mapaStore';
+import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useMapaPacientesQuery } from '../queries/useMapaPacientesQuery';
 import { useZonasQuery } from '../queries/useZonasQuery';
 import { useComunasPorZonaQuery } from '../queries/useComunasPorZonaQuery';
@@ -13,13 +12,16 @@ export default function MapPacientesMenu() {
   const {
     isMapSidebarOpen,
     mostrarPacientes,
-    isPacientesMenuOpen,
-    setPacientesMenuOpen,
+    activeMenuId,
+    setActiveMenu,
     pacientesFilters,
     setPacientesFilters,
+    setComunasSelected,
     seleccionarPaciente,
     toggleMostrarPacientes
   } = useMapaStore();
+
+  const isMenuOpen = activeMenuId === MENU_IDS.PACIENTES;
 
   const { data, isLoading, isError } = useMapaPacientesQuery();
   const { data: zonasData, isLoading: loadingZonas } = useZonasQuery();
@@ -39,6 +41,16 @@ export default function MapPacientesMenu() {
         [name]: value,
         id_comuna: ''
       });
+      setComunasSelected([]); // Limpiar mapa al cambiar zona
+    } else if (name === 'id_comuna') {
+      setPacientesFilters({ [name]: value });
+      if (value) {
+        const numericId = parseInt(value, 10);
+        const mapKey = !isNaN(numericId) ? `comuna${numericId}` : value;
+        setComunasSelected([mapKey]);
+      } else {
+        setComunasSelected([]);
+      }
     } else {
       setPacientesFilters({ [name]: value });
     }
@@ -49,13 +61,13 @@ export default function MapPacientesMenu() {
   return (
     <div
       className={`absolute top-20 bottom-0 w-85 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${isMapSidebarOpen ? 'left-80' : 'left-0'
-        } ${isPacientesMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* Viñeta para volver a abrir cuando está cerrado */}
       <button
-        onClick={() => setPacientesMenuOpen(true)}
-        className={`absolute top-24 w-10 h-14 bg-white border border-gray-200 border-l-0 rounded-r-xl shadow-md flex items-center justify-center text-gray-400 hover:text-[#2563EB] hover:bg-gray-50 focus:outline-none transition-all duration-300 ${isPacientesMenuOpen ? 'opacity-0 -right-5 pointer-events-none' : 'opacity-100 -right-10'
+        onClick={() => setActiveMenu(MENU_IDS.PACIENTES)}
+        className={`absolute top-24 w-10 h-14 bg-white border border-gray-200 border-l-0 rounded-r-xl shadow-md flex items-center justify-center text-gray-400 hover:text-[#2563EB] hover:bg-gray-50 focus:outline-none transition-all duration-300 ${isMenuOpen ? 'opacity-0 -right-5 pointer-events-none' : 'opacity-100 -right-10'
           }`}
         title="Filtros de Pacientes"
       >
@@ -73,7 +85,7 @@ export default function MapPacientesMenu() {
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setPacientesMenuOpen(false)}
+            onClick={() => setActiveMenu(null)}
             title="Minimizar panel"
             className="text-gray-400 hover:text-[#2563EB] transition-colors p-2 rounded-xl hover:bg-blue-50"
           >
