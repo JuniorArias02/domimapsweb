@@ -117,8 +117,7 @@ export default function MapPacientesMenu() {
               Todos
             </button>
             {[
-              { id: 'ACTIVO', color: 'text-blue-600', activeBg: 'bg-blue-50' },
-              { id: 'FALLECIDO', color: 'text-red-600', activeBg: 'bg-red-50' }
+              { id: 'ACTIVO', color: 'text-blue-600', activeBg: 'bg-blue-50' }
             ].map((status) => (
               <button
                 key={status.id}
