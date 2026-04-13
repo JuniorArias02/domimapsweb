@@ -28,14 +28,7 @@ export default function MapRutasGlobalesMenu() {
   // Extraer bloques únicos de los datos para el selector
   const availableBlocks = [...new Set(visits.map(v => v.bloque_ruta))].sort((a, b) => parseInt(a) - parseInt(b));
 
-  const currentYear = new Date().getFullYear();
-  const years = [currentYear - 1, currentYear, currentYear + 1];
-  const months = [
-    { id: 1, name: 'Enero' }, { id: 2, name: 'Febrero' }, { id: 3, name: 'Marzo' },
-    { id: 4, name: 'Abril' }, { id: 5, name: 'Mayo' }, { id: 6, name: 'Junio' },
-    { id: 7, name: 'Julio' }, { id: 8, name: 'Agosto' }, { id: 9, name: 'Septiembre' },
-    { id: 10, name: 'Octubre' }, { id: 11, name: 'Noviembre' }, { id: 12, name: 'Diciembre' }
-  ];
+
 
   if (!isMenuOpen) return null;
 
@@ -68,28 +61,10 @@ export default function MapRutasGlobalesMenu() {
       {/* Configuration Area */}
       <div className={`p-6 bg-white border-b border-gray-100 space-y-5 transition-all duration-300 ${isMapSidebarOpen ? 'pl-10' : ''}`}>
         
-        {/* Month and Year */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Mes</label>
-            <select 
-              value={rutasGlobalesFilters.mes}
-              onChange={(e) => setRutasGlobalesFilters({ mes: parseInt(e.target.value) })}
-              className="w-full text-[13px] font-black p-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-blue-500 transition-all text-gray-700 cursor-pointer"
-            >
-              {months.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Año</label>
-            <select 
-              value={rutasGlobalesFilters.anio}
-              onChange={(e) => setRutasGlobalesFilters({ anio: parseInt(e.target.value) })}
-              className="w-full text-[13px] font-black p-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-blue-500 transition-all text-gray-700 cursor-pointer"
-            >
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
+        <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-50">
+          <p className="text-[10px] text-blue-600 font-bold uppercase leading-relaxed">
+            Se generará una ruta optimizada de todos los pacientes disponibles basada en la cercanía geográfica.
+          </p>
         </div>
 
         {/* Mode Toggle Button */}
@@ -102,7 +77,7 @@ export default function MapRutasGlobalesMenu() {
           }`}
         >
           {mostrarRutasGlobales ? <Power size={18} /> : <Sparkles size={18} />}
-          {mostrarRutasGlobales ? 'Desactivar Capa' : 'Generar Ruta Global'}
+          {mostrarRutasGlobales ? 'Desactivar Capa' : 'Generar Mega Ruta Global'}
         </button>
       </div>
 
@@ -163,7 +138,7 @@ export default function MapRutasGlobalesMenu() {
                         <span className="truncate max-w-[180px]">{v.direccion}</span>
                       </div>
                       <div className="mt-2 text-[8px] font-black text-blue-500 uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-md w-fit">
-                        Proyectada: {v.fecha_proyectada}
+                        ID: {v.id_paciente}
                       </div>
                     </div>
                   </div>
@@ -174,22 +149,22 @@ export default function MapRutasGlobalesMenu() {
         </div>
       </div>
 
-      {/* Selector de Bloques (Cuadrícula de 4) */}
+      {/* Selector de Bloques (Cuadrícula de 4) con Scroll */}
       {availableBlocks.length > 0 && (
-        <div className="absolute left-full top-10 w-48 bg-white/95 backdrop-blur-md shadow-2xl border border-l-0 border-gray-100 rounded-r-3xl flex flex-col p-4 gap-4 animate-in slide-in-from-left-2 duration-500">
-          <div className="flex items-center gap-2 opacity-30 ml-1">
+        <div className="absolute left-full top-10 w-48 max-h-[75vh] bg-white/95 backdrop-blur-md shadow-2xl border border-l-0 border-gray-100 rounded-r-3xl flex flex-col p-4 gap-4 animate-in slide-in-from-left-2 duration-500">
+          <div className="flex items-center gap-2 opacity-30 ml-1 flex-shrink-0">
             <Layers size={14} className="text-gray-500" />
             <span className="text-[9px] font-black uppercase tracking-tighter">Bloques de Ruta</span>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {/* Botón TODOS */}
+          <div className="flex flex-col gap-3 overflow-hidden">
+            {/* Botón TODOS - Fijo arriba */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 clearBloqueFilters();
               }}
-              className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-black text-[10px] uppercase border ${
+              className={`w-full py-2.5 rounded-xl flex-shrink-0 flex items-center justify-center gap-2 transition-all duration-300 font-black text-[10px] uppercase border ${
                 rutasGlobalesFilters.bloques.length === 0
                   ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20'
                   : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:text-blue-600'
@@ -199,25 +174,27 @@ export default function MapRutasGlobalesMenu() {
               Todos
             </button>
 
-            {/* Rejilla de 4 bloques por fila */}
-            <div className="grid grid-cols-4 gap-2">
-              {availableBlocks.map((b) => (
-                <button
-                  key={b}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleBloqueFilter(String(b));
-                  }}
-                  className={`h-9 rounded-lg flex flex-col items-center justify-center transition-all duration-300 border ${
-                    rutasGlobalesFilters.bloques.includes(String(b))
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105'
-                      : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:text-blue-600'
-                  }`}
-                >
-                  <span className="text-[12px] font-black leading-none">{b}</span>
-                  <span className="text-[6px] font-black uppercase opacity-60">B</span>
-                </button>
-              ))}
+            {/* Rejilla de 4 bloques por fila con Scroll Interno */}
+            <div className="overflow-y-auto custom-scrollbar pr-1 pb-2">
+              <div className="grid grid-cols-4 gap-2">
+                {availableBlocks.map((b) => (
+                  <button
+                    key={b}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleBloqueFilter(String(b));
+                    }}
+                    className={`h-9 rounded-lg flex flex-col items-center justify-center transition-all duration-300 border ${
+                      rutasGlobalesFilters.bloques.includes(String(b))
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105'
+                        : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:text-blue-600'
+                    }`}
+                  >
+                    <span className="text-[12px] font-black leading-none">{b}</span>
+                    <span className="text-[6px] font-black uppercase opacity-60">B</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

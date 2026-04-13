@@ -92,9 +92,9 @@ export const obtenerPacientesPorComuna = async (id_comuna) => {
 
 /**
  * Fetch global optimized routes (Patient Route Optimization)
- * @param {Object} params - mes, anio
+ * No longer requires parameters as it returns the full mega-list
  */
-export const obtenerRutasOptimizadasGlobal = async (params = {}) => {
-  const response = await api.get('/mapas/rutas-optimizadas-global', { params });
+export const obtenerRutasOptimizadasGlobal = async () => {
+  const response = await api.get('/mapas/rutas-optimizadas');
   return response.data;
 };

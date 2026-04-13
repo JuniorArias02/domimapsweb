@@ -17,15 +17,17 @@ function RutaAuth({ children }) {
   return !isAuthenticated ? children : <Navigate to="/panel" replace />;
 }
 
+// Ruta de fallback: Evalúa el login para llevarte a tu panel o botarte al login
+function RutaCatchAll() {
+  const { isAuthenticated } = useAuthStore();
+  return isAuthenticated ? <Navigate to="/panel" replace /> : <Navigate to="/login" replace />;
+}
+
 /**
  * Router principal — NO modificar para agregar módulos.
  * Para agregar rutas ve a: src/app/routesRegistry.jsx
  */
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/panel" replace />,
-  },
   {
     path: '/login',
     element: (
@@ -41,11 +43,16 @@ const router = createBrowserRouter([
         <MainLayout />
       </RutaProtegida>
     ),
-    children: rutasProtegidas,
+    children: [
+      // Redirigir la raíz exacta a panel si entra a '/'
+      { index: true, element: <Navigate to="/panel" replace /> },
+      ...rutasProtegidas
+    ],
   },
   {
+    // Cualquier otra ruta que ponga mal el usuario (Ej: /asdf)
     path: '*',
-    element: <Navigate to="/panel" replace />,
+    element: <RutaCatchAll />,
   },
 ]);
 

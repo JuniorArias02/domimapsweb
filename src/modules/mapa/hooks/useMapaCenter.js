@@ -70,15 +70,16 @@ export const useMapaCenter = ({
     }
 
     // 4. Rutas Globales
-    const globalKey = `${rutasGlobalesFilters.mes}-${rutasGlobalesFilters.anio}`;
-    if (mostrarRutasGlobales && visitasGlobal.length > 0 && globalKey !== lastGlobalKey.current) {
+    if (mostrarRutasGlobales && visitasGlobal.length > 0 && lastGlobalKey.current !== 'ACTIVE') {
        const firstGlobal = visitasGlobal.find(v => v.latitud && v.longitud);
        if (firstGlobal) {
           const newCenter = [parseFloat(firstGlobal.latitud), parseFloat(firstGlobal.longitud)];
           setCurrentCenter(newCenter);
           setCurrentZoom(13);
-          lastGlobalKey.current = globalKey;
+          lastGlobalKey.current = 'ACTIVE';
        }
+    } else if (!mostrarRutasGlobales) {
+      lastGlobalKey.current = null;
     }
   }, [
     selectedPacienteId, 
@@ -88,8 +89,6 @@ export const useMapaCenter = ({
     pacientesPuntos,
     mostrarRutasGlobales,
     visitasGlobal,
-    rutasGlobalesFilters.mes,
-    rutasGlobalesFilters.anio,
     selectedComunas
   ]);
 

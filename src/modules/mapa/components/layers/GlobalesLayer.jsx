@@ -57,9 +57,6 @@ export const GlobalesLayer = ({
               <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1">
                 {v.nombre_paciente}
               </div>
-              <div className="text-[10px] text-gray-500 font-bold mb-1 uppercase">
-                 Proyectada: {v.fecha_proyectada}
-              </div>
               <div className="text-[10px] text-gray-400 mt-2 leading-[1.2] flex items-start gap-1">
                 <MapPin size={10} className="flex-shrink-0 mt-0.5" />
                 {v.direccion}

@@ -32,8 +32,6 @@ const INITIAL_PROFESIONALES_FILTERS = {
 };
 
 const INITIAL_GLOBALES_FILTERS = {
-  mes: new Date().getMonth() + 1,
-  anio: new Date().getFullYear(),
   bloques: []
 };
 
