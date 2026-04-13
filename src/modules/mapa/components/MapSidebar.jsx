@@ -10,19 +10,23 @@ export default function MapSidebar() {
     toggleMostrarPacientes,
     mostrarProfesionales,
     toggleMostrarProfesionales,
+    mostrarRutasGlobales,
+    toggleRutasGlobalesMenu,
     toggleComunasMenu,
     activeMenuId,
     tipoVistaPacientes,
-    setTipoVistaPacientes,
-    toggleRutasGlobalesMenu
+    setTipoVistaPacientes
   } = useMapaStore();
 
+  // Estados derivados para claridad visual
+  const isPacientesActive = mostrarPacientes;
+  const isProfesionalesActive = mostrarProfesionales;
+  const isRutasGlobalActive = mostrarRutasGlobales;
   const isComunasActive = activeMenuId === MENU_IDS.COMUNAS;
-  const isRutasGlobalActive = activeMenuId === MENU_IDS.OPTIMIZADOR_GLOBAL;
 
   return (
     <div
-      className={`absolute top-20 bottom-0 left-0 w-80 bg-white shadow-2xl z-[400] transition-all duration-300 flex flex-col border-r border-gray-100 ${isMapSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`absolute top-0 bottom-0 left-0 w-80 bg-white shadow-2xl z-[400] transition-all duration-300 flex flex-col border-r border-gray-100 ${isMapSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* Toggle Button (Google Maps Style) */}
@@ -60,20 +64,20 @@ export default function MapSidebar() {
           <div className="space-y-1">
             <div
               onClick={toggleMostrarPacientes}
-              className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 ${mostrarPacientes
+              className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 ${isPacientesActive
                   ? 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-500/5'
                   : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'
                 }`}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${mostrarPacientes
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${isPacientesActive
                     ? 'bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 rotate-0'
                     : 'bg-gray-100 text-gray-400 rotate-[-10deg] group-hover:rotate-0 group-hover:bg-gray-200'
                   }`}>
                   <Users size={22} />
                 </div>
                 <div>
-                  <span className={`block text-sm font-black transition-colors ${mostrarPacientes ? 'text-[#2563EB]' : 'text-gray-700'
+                  <span className={`block text-sm font-black transition-colors ${isPacientesActive ? 'text-[#2563EB]' : 'text-gray-700'
                     }`}>
                     Pacientes
                   </span>
@@ -84,18 +88,21 @@ export default function MapSidebar() {
               </div>
 
               {/* Custom Switch */}
-              <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${mostrarPacientes ? 'bg-[#2563EB]' : 'bg-gray-200'
+              <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${isPacientesActive ? 'bg-[#2563EB]' : 'bg-gray-200'
                 }`}>
-                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${mostrarPacientes ? 'left-6' : 'left-1'
+                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isPacientesActive ? 'left-6' : 'left-1'
                   }`}></div>
               </div>
             </div>
 
             {/* Sub-opciones de Pacientes (Aislado para mejor UX) */}
-            {mostrarPacientes && (
+            {isPacientesActive && (
               <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-50/50 rounded-2xl border border-gray-100 mt-1 mx-1 animate-in slide-in-from-top-2 duration-300">
                 <button
-                  onClick={() => setTipoVistaPacientes('GENERAL')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTipoVistaPacientes('GENERAL');
+                  }}
                   className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all ${tipoVistaPacientes === 'GENERAL'
                       ? 'bg-white text-[#2563EB] shadow-sm border border-blue-100'
                       : 'text-gray-400 hover:text-gray-600'
@@ -104,7 +111,10 @@ export default function MapSidebar() {
                   General
                 </button>
                 <button
-                  onClick={() => setTipoVistaPacientes('POR_COMUNA')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTipoVistaPacientes('POR_COMUNA');
+                  }}
                   className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all ${tipoVistaPacientes === 'POR_COMUNA'
                       ? 'bg-white text-[#2563EB] shadow-sm border border-blue-100'
                       : 'text-gray-400 hover:text-gray-600'
@@ -119,20 +129,20 @@ export default function MapSidebar() {
           {/* Control: Mostrar Profesionales */}
           <div
             onClick={toggleMostrarProfesionales}
-            className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 mt-2 ${mostrarProfesionales
+            className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 mt-2 ${isProfesionalesActive
                 ? 'bg-emerald-50/50 border-emerald-100 shadow-sm shadow-emerald-500/5'
                 : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'
               }`}
           >
             <div className="flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${mostrarProfesionales
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${isProfesionalesActive
                   ? 'bg-[#10B981] text-white shadow-lg shadow-emerald-500/30 rotate-0'
                   : 'bg-gray-100 text-gray-400 rotate-[-10deg] group-hover:rotate-0 group-hover:bg-gray-200'
                 }`}>
                 <BriefcaseMedical size={22} />
               </div>
               <div>
-                <span className={`block text-sm font-black transition-colors ${mostrarProfesionales ? 'text-[#10B981]' : 'text-gray-700'
+                <span className={`block text-sm font-black transition-colors ${isProfesionalesActive ? 'text-[#10B981]' : 'text-gray-700'
                   }`}>
                   Profesionales
                 </span>
@@ -143,9 +153,9 @@ export default function MapSidebar() {
             </div>
 
             {/* Custom Switch */}
-            <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${mostrarProfesionales ? 'bg-[#10B981]' : 'bg-gray-200'
+            <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${isProfesionalesActive ? 'bg-[#10B981]' : 'bg-gray-200'
               }`}>
-              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${mostrarProfesionales ? 'left-6' : 'left-1'
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isProfesionalesActive ? 'left-6' : 'left-1'
                 }`}></div>
             </div>
           </div>
@@ -184,8 +194,7 @@ export default function MapSidebar() {
             </div>
           </div>
 
-
-
+          {/* Control: Rutas Globales */}
           <div
             onClick={toggleRutasGlobalesMenu}
             className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 mt-2 ${isRutasGlobalActive

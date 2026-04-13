@@ -16,6 +16,7 @@ import MapDetallePaciente from '../components/MapDetallePaciente';
 import MapComunasMenu from '../components/MapComunasMenu';
 import MapPacientesComunaMenu from '../components/MapPacientesComunaMenu';
 import MapRutasGlobalesMenu from '../components/MapRutasGlobalesMenu';
+import MapSearchBox from '../components/MapSearchBox';
 import MapRuler from '../components/MapRuler';
 import { MapChangeView } from '../components/MapChangeView';
 
@@ -97,6 +98,9 @@ const MapaPage = () => {
   return (
     <div className="w-full h-[100dvh] relative z-0 overflow-hidden">
       
+      {/* Buscador Superior del Mapa */}
+      <MapSearchBox />
+
       {/* Componentes Modulares de Sidebars */}
       <MapSidebar />
       <MapPacientesMenu />

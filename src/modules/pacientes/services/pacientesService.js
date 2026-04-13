@@ -3,11 +3,11 @@ import api from '../../../api/api';
 const ENDPOINT = '/pacientes';
 
 /**
- * Obtiene la lista de todos los pacientes.
- * @param {number} pagina
+ * Obtiene la lista de pacientes con filtros opcionales.
+ * @param {Object} params - name, identification, page, per_page, etc.
  */
-export const obtenerPacientes = async (pagina = 1) => {
-  const { data } = await api.get(`${ENDPOINT}?page=${pagina}`);
+export const obtenerPacientes = async (params = {}) => {
+  const { data } = await api.get(ENDPOINT, { params });
   return data;
 };
 

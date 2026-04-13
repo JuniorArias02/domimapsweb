@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { comunas } from '../constants/comunas';
+import { useMapaStore } from '../store/mapaStore';
 
 const INITIAL_POSITION = [7.886053739251232, -72.497568179007];
 
@@ -21,10 +22,13 @@ export const useMapaCenter = ({
   const lastSelectedPacienteId = useRef(null);
   const lastGlobalKey = useRef(null);
   const lastComunaId = useRef(null);
+  
+  const { selectedPacienteInfo } = useMapaStore();
 
   useEffect(() => {
     // 1. Prioridad: Paciente seleccionado
-    const selectedPac = pacientesPuntos.find(p => p.id_paciente === selectedPacienteId);
+    // Si tenemos la info directamente (ej: desde el buscador), usarla. Si no, buscar en los puntos cargados.
+    const selectedPac = selectedPacienteInfo || pacientesPuntos.find(p => p.id_paciente === selectedPacienteId);
     if (selectedPac?.latitud && selectedPacienteId !== lastSelectedPacienteId.current) {
       const newCenter = [parseFloat(selectedPac.latitud), parseFloat(selectedPac.longitud)];
       setCurrentCenter(newCenter);

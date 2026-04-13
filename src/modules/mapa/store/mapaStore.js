@@ -34,74 +34,94 @@ const INITIAL_PROFESIONALES_FILTERS = {
 const INITIAL_GLOBALES_FILTERS = {
   mes: new Date().getMonth() + 1,
   anio: new Date().getFullYear(),
-  bloque: 'TODOS'
+  bloques: []
 };
 
-export const useMapaStore = create((set) => ({
-  // --- Estado de la Barra Lateral Principal (Extremo izquierdo) ---
+/**
+ * Estado de limpieza total (Capa base para toggles exclusivos)
+ */
+const CLEAR_STATE = {
+  mostrarPacientes: false,
+  mostrarProfesionales: false,
+  mostrarRutasGlobales: false,
+  activeMenuId: null,
+  // Reset Filtros
+  pacientesFilters: INITIAL_PACIENTES_FILTERS,
+  profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
+  rutasGlobalesFilters: INITIAL_GLOBALES_FILTERS,
+  // Reset Selecciones
+  selectedPacienteId: null,
+  selectedComunas: [],
+  filtroComunaId: '',
+  // Reset Optimización Local
+  isComparingLocalRoute: false,
+  localOptimizedRoute: [],
+  distanciaOriginal: 0,
+  distanciaOptimizada: 0,
+  // Reset Herramientas
+  isRulerActive: false,
+  rulerPoints: []
+};
+
+export const useMapaStore = create((set, get) => ({
+  // --- Estado de la Barra Lateral Principal ---
   isMapSidebarOpen: false,
   toggleMapSidebar: () => set((state) => ({ isMapSidebarOpen: !state.isMapSidebarOpen })),
   
-  // --- Patrón de Menú Activo (Visibilidad exclusiva) ---
+  // --- Patrón de Menú Activo ---
   activeMenuId: null, 
-  setActiveMenu: (menuId) => set((state) => ({ 
-    activeMenuId: state.activeMenuId === menuId ? null : menuId 
-  })),
+  setActiveMenu: (menuId) => set({ activeMenuId: menuId }),
   closeAllMenus: () => set({ activeMenuId: null }),
 
-  // --- Visibilidad de las Capas del Mapa ---
+  // --- Capas con Toggles Exclusivos y Limpieza Atómica ---
   mostrarPacientes: false,
-  setMostrarPacientes: (val) => set({ mostrarPacientes: val }),
   toggleMostrarPacientes: () => set((state) => {
-    const newVal = !state.mostrarPacientes;
-    let targetMenu = null;
-    if (newVal) {
-      targetMenu = state.tipoVistaPacientes === 'GENERAL' ? MENU_IDS.PACIENTES : MENU_IDS.PACIENTES_COMUNA;
-    }
+    const isCurrentlyActive = state.mostrarPacientes;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
     
     return { 
-      mostrarPacientes: newVal,
-      activeMenuId: newVal ? targetMenu : (state.activeMenuId === MENU_IDS.PACIENTES || state.activeMenuId === MENU_IDS.PACIENTES_COMUNA ? null : state.activeMenuId),
-      // LIMPIEZA AL APAGAR
-      ...(!newVal ? {
-        pacientesFilters: INITIAL_PACIENTES_FILTERS,
-        selectedPacienteId: null,
-        selectedComunas: [], // Limpiar polígono si estaba por filtro
-        filtroComunaId: ''
-      } : {
-        mostrarProfesionales: false // Desactivar profesionales si activamos pacientes
-      })
+      ...state,
+      ...CLEAR_STATE,
+      mostrarPacientes: true,
+      activeMenuId: state.tipoVistaPacientes === 'GENERAL' ? MENU_IDS.PACIENTES : MENU_IDS.PACIENTES_COMUNA
     };
   }),
 
   mostrarProfesionales: false,
-  setMostrarProfesionales: (val) => set({ mostrarProfesionales: val }),
   toggleMostrarProfesionales: () => set((state) => {
-    const newVal = !state.mostrarProfesionales;
+    const isCurrentlyActive = state.mostrarProfesionales;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
     return { 
-      mostrarProfesionales: newVal,
-      activeMenuId: newVal ? MENU_IDS.PROFESIONALES : (state.activeMenuId === MENU_IDS.PROFESIONALES ? null : state.activeMenuId),
-      // LIMPIEZA AL APAGAR
-      ...(!newVal ? {
-        profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
-        isComparingLocalRoute: false,
-        localOptimizedRoute: [],
-        distanciaOriginal: 0,
-        distanciaOptimizada: 0
-      } : {
-        mostrarPacientes: false // Desactivar pacientes si activamos profesionales
-      })
+      ...state,
+      ...CLEAR_STATE,
+      mostrarProfesionales: true,
+      activeMenuId: MENU_IDS.PROFESIONALES
     };
   }),
 
   mostrarRutasGlobales: false,
-  setMostrarRutasGlobales: (val) => set({ mostrarRutasGlobales: val }),
   toggleRutasGlobalesMenu: () => set((state) => {
-    const isOpening = state.activeMenuId !== MENU_IDS.OPTIMIZADOR_GLOBAL;
+    const isCurrentlyActive = state.mostrarRutasGlobales;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
     return {
-      activeMenuId: isOpening ? MENU_IDS.OPTIMIZADOR_GLOBAL : null,
-      mostrarRutasGlobales: isOpening, // Sincronizamos visibilidad con el menú
-      ...(!isOpening ? { rutasGlobalesFilters: INITIAL_GLOBALES_FILTERS } : {})
+      ...state,
+      ...CLEAR_STATE,
+      mostrarRutasGlobales: true,
+      activeMenuId: MENU_IDS.OPTIMIZADOR_GLOBAL
+    };
+  }),
+
+  toggleComunasMenu: () => set((state) => {
+    const isCurrentlyActive = state.activeMenuId === MENU_IDS.COMUNAS;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
+    return { 
+      ...state,
+      ...CLEAR_STATE,
+      activeMenuId: MENU_IDS.COMUNAS,
+      selectedComunas: [] 
     };
   }),
 
@@ -131,6 +151,19 @@ export const useMapaStore = create((set) => ({
   setRutasGlobalesFilters: (filters) => set((state) => ({
     rutasGlobalesFilters: { ...state.rutasGlobalesFilters, ...filters }
   })),
+  toggleBloqueFilter: (bloqueId) => set((state) => {
+    const { bloques } = state.rutasGlobalesFilters;
+    const newBloques = bloques.includes(bloqueId)
+      ? bloques.filter(id => id !== bloqueId)
+      : [...bloques, bloqueId];
+    
+    return {
+      rutasGlobalesFilters: { ...state.rutasGlobalesFilters, bloques: newBloques }
+    };
+  }),
+  clearBloqueFilters: () => set((state) => ({
+    rutasGlobalesFilters: { ...state.rutasGlobalesFilters, bloques: [] }
+  })),
 
   // --- Lógica de Profesionales ---
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
@@ -138,32 +171,25 @@ export const useMapaStore = create((set) => ({
     set((state) => ({
       profesionalesFilters: { ...state.profesionalesFilters, ...newFilters, page: 1 }
     })),
-  setProfesionalesPage: (page) => 
-    set((state) => ({
-      profesionalesFilters: { ...state.profesionalesFilters, page }
-    })),
     
   // --- Detalle del Paciente ---
   selectedPacienteId: null,
-  seleccionarPaciente: (id) => set({ 
+  selectedPacienteInfo: null,
+  seleccionarPaciente: (id, info = null) => set({ 
     selectedPacienteId: id, 
+    selectedPacienteInfo: info,
     activeMenuId: id ? MENU_IDS.DETALLE_PACIENTE : null 
   }),
   cerrarDetalle: () => set((state) => ({ 
     selectedPacienteId: null, 
-    activeMenuId: state.activeMenuId === MENU_IDS.DETALLE_PACIENTE ? null : state.activeMenuId
+    selectedPacienteInfo: null,
+    activeMenuId: state.mostrarPacientes 
+      ? (state.tipoVistaPacientes === 'GENERAL' ? MENU_IDS.PACIENTES : MENU_IDS.PACIENTES_COMUNA) 
+      : (state.activeMenuId === MENU_IDS.DETALLE_PACIENTE ? null : state.activeMenuId)
   })),
 
   // --- Comunas ---
   selectedComunas: [], 
-  toggleComunasMenu: () => set((state) => {
-    const isClosing = state.activeMenuId === MENU_IDS.COMUNAS;
-    return { 
-      activeMenuId: isClosing ? null : MENU_IDS.COMUNAS,
-      // Al apagar el menú de comunas desde el sidebar, limpiamos la selección visual
-      ...(isClosing ? { selectedComunas: [] } : {})
-    };
-  }),
   toggleComunaSelection: (comunaId) => set((state) => ({
     selectedComunas: state.selectedComunas.includes(comunaId)
       ? state.selectedComunas.filter(id => id !== comunaId)
@@ -171,35 +197,20 @@ export const useMapaStore = create((set) => ({
   })),
   setComunasSelected: (comunasIds) => set({ selectedComunas: comunasIds }),
 
-  // --- Optimización Local (Comparativa) ---
+  // --- Optimización Local ---
   isComparingLocalRoute: false,
   localOptimizedRoute: [],
   distanciaOriginal: 0,
   distanciaOptimizada: 0,
-  
-  setLocalOptimization: (data) => set({
-    isComparingLocalRoute: true,
-    localOptimizedRoute: data.optimized,
-    distanciaOriginal: data.distanciaOriginal,
-    distanciaOptimizada: data.distanciaOptimizada
-  }),
-  
-  clearLocalOptimization: () => set({
-    isComparingLocalRoute: false,
-    localOptimizedRoute: [],
-    distanciaOriginal: 0,
-    distanciaOptimizada: 0
-  }),
+  setLocalOptimization: (data) => set({ isComparingLocalRoute: true, localOptimizedRoute: data.optimized, distanciaOriginal: data.distanciaOriginal, distanciaOptimizada: data.distanciaOptimizada }),
+  clearLocalOptimization: () => set({ isComparingLocalRoute: false, localOptimizedRoute: [], distanciaOriginal: 0, distanciaOptimizada: 0 }),
 
-  // --- Herramienta de Regla Virtual ---
+  // --- Herramienta de Regla ---
   isRulerActive: false,
-  rulerPoints: [], // Máximo 2 puntos
+  rulerPoints: [], 
   setRulerActive: (val) => set({ isRulerActive: val, rulerPoints: [] }),
   toggleRuler: () => set((state) => ({ isRulerActive: !state.isRulerActive, rulerPoints: [] })),
-  addRulerPoint: (latlng) => set((state) => {
-    const newPoints = state.rulerPoints.length >= 2 ? [latlng] : [...state.rulerPoints, latlng];
-    return { rulerPoints: newPoints };
-  }),
+  addRulerPoint: (latlng) => set((state) => ({ rulerPoints: state.rulerPoints.length >= 2 ? [latlng] : [...state.rulerPoints, latlng] })),
   clearRuler: () => set({ rulerPoints: [] }),
 
 }));

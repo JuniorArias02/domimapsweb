@@ -4,10 +4,9 @@ export const itemsNavegacion = [
   { icono: Home, etiqueta: 'Panel', ruta: '/panel' },
   { icono: Map, etiqueta: 'Mapa', ruta: '/mapa' },
   { icono: Users, etiqueta: 'Pacientes', ruta: '/pacientes' },
-  { icono: Calendar, etiqueta: 'Agenda', ruta: '/agenda' },
-  { icono: FileText, etiqueta: 'Documentos', ruta: '/documentos' },
+  { icono: Calendar, etiqueta: 'Agenda', ruta: '/agenda' }
 ];
 
 export const itemsNavegacionSecundaria = [
-  { icono: Settings, etiqueta: 'Configuración', ruta: '/configuracion' },
+  // { icono: Settings, etiqueta: 'Configuración', ruta: '/configuracion' },
 ];

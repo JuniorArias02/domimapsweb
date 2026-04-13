@@ -1,7 +1,6 @@
 import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useMapaPacientesQuery } from '../queries/useMapaPacientesQuery';
-import { useZonasQuery } from '../queries/useZonasQuery';
-import { useComunasPorZonaQuery } from '../queries/useComunasPorZonaQuery';
+import { useTodoComunasQuery } from '../queries/useTodoComunasQuery';
 import { useAseguradorasQuery } from '../queries/useAseguradorasQuery';
 import {
   X, Search, Filter,
@@ -24,11 +23,9 @@ export default function MapPacientesMenu() {
   const isMenuOpen = activeMenuId === MENU_IDS.PACIENTES;
 
   const { data, isLoading, isError } = useMapaPacientesQuery();
-  const { data: zonasData, isLoading: loadingZonas } = useZonasQuery();
-  const { data: comunasData, isLoading: loadingComunas } = useComunasPorZonaQuery(pacientesFilters.id_zona);
+  const { data: comunasData, isLoading: loadingComunas } = useTodoComunasQuery();
   const { data: aseguradorasData, isLoading: loadingAseguradoras } = useAseguradorasQuery();
 
-  const zonas = zonasData?.data || [];
   const comunas = comunasData?.data || [];
   const aseguradoras = aseguradorasData?.data || [];
 
@@ -36,13 +33,7 @@ export default function MapPacientesMenu() {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'id_zona') {
-      setPacientesFilters({
-        [name]: value,
-        id_comuna: ''
-      });
-      setComunasSelected([]); // Limpiar mapa al cambiar zona
-    } else if (name === 'id_comuna') {
+    if (name === 'id_comuna') {
       setPacientesFilters({ [name]: value });
       if (value) {
         const numericId = parseInt(value, 10);
@@ -136,47 +127,15 @@ export default function MapPacientesMenu() {
 
         <div className="space-y-4">
           <div className="relative">
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Zona Geográfica</label>
-            <div className="relative group">
-              <select
-                name="id_zona"
-                value={pacientesFilters.id_zona || ''}
-                onChange={handleFilterChange}
-                className="w-full text-[13px] font-black flex items-center p-3.5 pl-11 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500 transition-all text-gray-700 appearance-none cursor-pointer hover:border-gray-200"
-              >
-                <option value="">Todas las Zonas</option>
-                {zonas.map((zona) => (
-                  <option key={zona.id_zona} value={zona.id_zona}>
-                    {zona.nombre}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2563EB] group-focus-within:scale-110 transition-transform">
-                <Globe size={18} />
-              </div>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none">
-                <ChevronDown size={18} />
-              </div>
-              {loadingZonas && (
-                <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                  <div className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="relative">
             <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Comuna / Sector</label>
             <div className="relative group">
               <select
                 name="id_comuna"
                 value={pacientesFilters.id_comuna || ''}
                 onChange={handleFilterChange}
-                disabled={!pacientesFilters.id_zona}
-                className={`w-full text-[13px] font-black p-3.5 pl-11 border rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500 transition-all text-gray-700 appearance-none cursor-pointer hover:border-gray-200 ${!pacientesFilters.id_zona ? 'bg-gray-100 border-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-50 border-gray-100'
-                  }`}
+                className="w-full text-[13px] font-black p-3.5 pl-11 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500 transition-all text-gray-700 appearance-none cursor-pointer hover:border-gray-200"
               >
-                <option value="">{pacientesFilters.id_zona ? 'Todas las Comunas' : 'Seleccione una Zona'}</option>
+                <option value="">Todas las Comunas</option>
                 {comunas.map((comuna) => (
                   <option key={comuna.id_comuna} value={comuna.id_comuna}>
                     {comuna.nombre}

@@ -13,6 +13,8 @@ export default function MapRutasGlobalesMenu() {
     setActiveMenu,
     rutasGlobalesFilters,
     setRutasGlobalesFilters,
+    toggleBloqueFilter,
+    clearBloqueFilters,
     mostrarRutasGlobales,
     setMostrarRutasGlobales
   } = useMapaStore();
@@ -130,7 +132,7 @@ export default function MapRutasGlobalesMenu() {
           {/* Agrupar y Filtrar por bloques */}
           {Object.entries(
             visits
-              .filter(v => rutasGlobalesFilters.bloque === 'TODOS' || String(v.bloque_ruta) === String(rutasGlobalesFilters.bloque))
+              .filter(v => rutasGlobalesFilters.bloques.length === 0 || rutasGlobalesFilters.bloques.includes(String(v.bloque_ruta)))
               .reduce((acc, v) => {
               const block = v.bloque_ruta || 'Sin Bloque';
               if (!acc[block]) acc[block] = [];
@@ -183,9 +185,12 @@ export default function MapRutasGlobalesMenu() {
           <div className="flex flex-col gap-3">
             {/* Botón TODOS */}
             <button
-              onClick={() => setRutasGlobalesFilters({ bloque: 'TODOS' })}
+              onClick={(e) => {
+                e.stopPropagation();
+                clearBloqueFilters();
+              }}
               className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-black text-[10px] uppercase border ${
-                rutasGlobalesFilters.bloque === 'TODOS'
+                rutasGlobalesFilters.bloques.length === 0
                   ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20'
                   : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:text-blue-600'
               }`}
@@ -199,9 +204,12 @@ export default function MapRutasGlobalesMenu() {
               {availableBlocks.map((b) => (
                 <button
                   key={b}
-                  onClick={() => setRutasGlobalesFilters({ bloque: b })}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleBloqueFilter(String(b));
+                  }}
                   className={`h-9 rounded-lg flex flex-col items-center justify-center transition-all duration-300 border ${
-                    rutasGlobalesFilters.bloque === b
+                    rutasGlobalesFilters.bloques.includes(String(b))
                       ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105'
                       : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:text-blue-600'
                   }`}

@@ -17,6 +17,7 @@ import { Navigate } from 'react-router-dom';
 import { rutasDashboard } from '../modules/dashboard/routes/dashboardRoutes';
 import { rutasMapa }      from '../modules/mapa/routes/mapaRoutes';
 import { rutasPacientes }   from '../modules/pacientes/routes/pacientesRoutes';
+import { rutasAgenda }      from '../modules/agenda/routes/agendaRoutes';
 // import { rutasCitas }       from '../modules/citas/routes/citasRoutes';
 // import { rutasUsuarios }    from '../modules/usuarios/routes/usuariosRoutes';
 // ──────────────────────────────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ export const rutasProtegidas = [
   ...rutasDashboard,
   ...rutasMapa,
   ...rutasPacientes,
+  ...rutasAgenda,
   // ...rutasCitas,
   // ...rutasUsuarios,
   // ────────────────────────────────────────────────────────────────────────

@@ -11,8 +11,9 @@ import { obtenerBarrios } from '../services/barriosService';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 export const QUERY_KEYS_PACIENTES = {
-  todos: (pagina) => ['pacientes', { pagina }],
-  detalle: (id) => ['pacientes', id],
+  all: ['pacientes'],
+  todos: (params) => ['pacientes', 'list', params],
+  detalle: (id) => ['pacientes', 'detail', id],
   aseguradoras: ['aseguradoras'],
   barrios: ['barrios'],
 };
@@ -45,13 +46,15 @@ export const useBarriosQuery = () => {
 
 /**
  * Lista todos los pacientes.
- * @param {number} pagina
+ * @param {Object} params - Objeto de parámetros (pagina, por_pagina, nombre, identificacion, etc)
+ * @param {Object} options - Opciones adicionales de react-query (ej. enabled)
  */
-export const usePacientesQuery = (pagina = 1) => {
+export const usePacientesQuery = (params = { pagina: 1 }, options = {}) => {
   return useQuery({
-    queryKey: QUERY_KEYS_PACIENTES.todos(pagina),
-    queryFn: () => obtenerPacientes(pagina),
+    queryKey: QUERY_KEYS_PACIENTES.todos(params),
+    queryFn: () => obtenerPacientes(params),
     keepPreviousData: true, // Mantiene los datos anteriores mientras carga la nueva página
+    ...options
   });
 };
 
@@ -77,7 +80,7 @@ export const useCrearPacienteMutation = () => {
   return useMutation({
     mutationFn: crearPaciente,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.todos });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.all });
     },
   });
 };
@@ -90,8 +93,7 @@ export const useActualizarPacienteMutation = () => {
   return useMutation({
     mutationFn: ({ id, datos }) => actualizarPaciente(id, datos),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.todos });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.detalle(id) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.all });
     },
   });
 };
@@ -104,7 +106,8 @@ export const useEliminarPacienteMutation = () => {
   return useMutation({
     mutationFn: eliminarPaciente,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.todos });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.all });
     },
   });
 };
+

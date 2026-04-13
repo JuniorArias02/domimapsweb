@@ -10,7 +10,7 @@ export const useRutasGlobalesQuery = () => {
   const mostrarGlobal = useMapaStore(state => state.mostrarRutasGlobales);
 
   return useQuery({
-    queryKey: ['rutas_globales', filters],
+    queryKey: ['rutas_globales', filters.anio, filters.mes],
     queryFn: () => {
       const params = {
         mes: filters.mes,

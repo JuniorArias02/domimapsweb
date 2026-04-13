@@ -11,13 +11,13 @@ export const GlobalesLayer = ({
   isRulerActive
 }) => {
   const { createProfessionalVisitIcon } = useMapIcons();
-  const bloqueFilter = useMapaStore(state => state.rutasGlobalesFilters.bloque);
+  const selectedBlocks = useMapaStore(state => state.rutasGlobalesFilters.bloques);
 
   if (!mostrarRutasGlobales) return null;
 
-  // Filtrar visitas por bloque si no es 'TODOS'
+  // Filtrar visitas por bloque si hay bloques seleccionados (si está vacío, se muestran TODOS)
   const filteredVisits = visitasGlobal.filter(v => 
-    bloqueFilter === 'TODOS' || String(v.bloque_ruta) === String(bloqueFilter)
+    selectedBlocks.length === 0 || selectedBlocks.includes(String(v.bloque_ruta))
   );
 
   const blocks = filteredVisits.reduce((acc, v) => {
