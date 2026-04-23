@@ -98,3 +98,13 @@ export const obtenerRutasOptimizadasGlobal = async () => {
   const response = await api.get('/mapas/rutas-optimizadas');
   return response.data;
 };
+
+/**
+ * Fetch projected optimized routes based on frequency and proximity
+ * @param {Object} params - Query params (mes, anio, tipo_filtro)
+ * @returns {Promise} Resolves to list of optimized points
+ */
+export const optimizarRutas = async (params = {}) => {
+  const response = await api.get('/mapas/optimizar', { params });
+  return response.data;
+};

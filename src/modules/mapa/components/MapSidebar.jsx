@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, ChevronLeft, Layers, BriefcaseMedical, Building2, Globe } from 'lucide-react';
+import { Users, ChevronLeft, Layers, BriefcaseMedical, Building2, Globe, Zap } from 'lucide-react';
 import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 
 export default function MapSidebar() {
@@ -12,6 +12,8 @@ export default function MapSidebar() {
     toggleMostrarProfesionales,
     mostrarRutasGlobales,
     toggleRutasGlobalesMenu,
+    mostrarOptimizador,
+    toggleOptimizadorMenu,
     toggleComunasMenu,
     activeMenuId,
     tipoVistaPacientes,
@@ -224,6 +226,40 @@ export default function MapSidebar() {
             <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${isRutasGlobalActive ? 'bg-blue-600' : 'bg-gray-200'
               }`}>
               <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isRutasGlobalActive ? 'left-6' : 'left-1'
+                }`}></div>
+            </div>
+          </div>
+
+          {/* Control: Optimizador Proyectado */}
+          <div
+            onClick={toggleOptimizadorMenu}
+            className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 mt-2 ${mostrarOptimizador
+                ? 'bg-amber-50/50 border-amber-100 shadow-sm shadow-amber-500/5'
+                : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'
+              }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${mostrarOptimizador
+                  ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 rotate-0'
+                  : 'bg-gray-100 text-gray-400 rotate-[-10deg] group-hover:rotate-0 group-hover:bg-gray-200'
+                }`}>
+                <Zap size={22} />
+              </div>
+              <div>
+                <span className={`block text-sm font-black transition-colors ${mostrarOptimizador ? 'text-amber-600' : 'text-gray-700'
+                  }`}>
+                  Optimizador
+                </span>
+                <span className="text-[11px] text-gray-400 font-medium block mt-0.5 leading-none">
+                  Frecuencia y Cercanía
+                </span>
+              </div>
+            </div>
+
+            {/* Custom Switch Indicator */}
+            <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${mostrarOptimizador ? 'bg-amber-500' : 'bg-gray-200'
+              }`}>
+              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${mostrarOptimizador ? 'left-6' : 'left-1'
                 }`}></div>
             </div>
           </div>

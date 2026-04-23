@@ -9,7 +9,8 @@ export const MENU_IDS = {
   COMUNAS: 'COMUNAS',
   PACIENTES_COMUNA: 'PACIENTES_COMUNA',
   DETALLE_PACIENTE: 'DETALLE_PACIENTE',
-  OPTIMIZADOR_GLOBAL: 'OPTIMIZADOR_GLOBAL'
+  OPTIMIZADOR_GLOBAL: 'OPTIMIZADOR_GLOBAL',
+  OPTIMIZADOR: 'OPTIMIZADOR'
 };
 
 // --- Estados Iniciales para Reset ---
@@ -35,6 +36,13 @@ const INITIAL_GLOBALES_FILTERS = {
   bloques: []
 };
 
+const INITIAL_OPTIMIZADOR_FILTERS = {
+  mes: new Date().getMonth() + 1,
+  anio: new Date().getFullYear(),
+  tipo_filtro: 'pacientes',
+  bloques: []
+};
+
 /**
  * Estado de limpieza total (Capa base para toggles exclusivos)
  */
@@ -42,11 +50,13 @@ const CLEAR_STATE = {
   mostrarPacientes: false,
   mostrarProfesionales: false,
   mostrarRutasGlobales: false,
+  mostrarOptimizador: false,
   activeMenuId: null,
   // Reset Filtros
   pacientesFilters: INITIAL_PACIENTES_FILTERS,
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
   rutasGlobalesFilters: INITIAL_GLOBALES_FILTERS,
+  optimizadorFilters: INITIAL_OPTIMIZADOR_FILTERS,
   // Reset Selecciones
   selectedPacienteId: null,
   selectedComunas: [],
@@ -111,6 +121,19 @@ export const useMapaStore = create((set, get) => ({
     };
   }),
 
+  mostrarOptimizador: false,
+  toggleOptimizadorMenu: () => set((state) => {
+    const isCurrentlyActive = state.mostrarOptimizador;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
+    return {
+      ...state,
+      ...CLEAR_STATE,
+      mostrarOptimizador: true,
+      activeMenuId: MENU_IDS.OPTIMIZADOR
+    };
+  }),
+
   toggleComunasMenu: () => set((state) => {
     const isCurrentlyActive = state.activeMenuId === MENU_IDS.COMUNAS;
     if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
@@ -162,6 +185,22 @@ export const useMapaStore = create((set, get) => ({
   clearBloqueFilters: () => set((state) => ({
     rutasGlobalesFilters: { ...state.rutasGlobalesFilters, bloques: [] }
   })),
+
+  // --- Lógica de Optimizador Proyectado ---
+  optimizadorFilters: INITIAL_OPTIMIZADOR_FILTERS,
+  setOptimizadorFilters: (filters) => set((state) => ({
+    optimizadorFilters: { ...state.optimizadorFilters, ...filters }
+  })),
+  toggleBloqueOptimizador: (bloqueId) => set((state) => {
+    const { bloques } = state.optimizadorFilters;
+    const newBloques = bloques.includes(bloqueId)
+      ? bloques.filter(id => id !== bloqueId)
+      : [...bloques, bloqueId];
+    
+    return {
+      optimizadorFilters: { ...state.optimizadorFilters, bloques: newBloques }
+    };
+  }),
 
   // --- Lógica de Profesionales ---
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
