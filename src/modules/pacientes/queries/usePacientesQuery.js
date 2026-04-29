@@ -5,6 +5,7 @@ import {
   crearPaciente,
   actualizarPaciente,
   eliminarPaciente,
+  actualizarUbicacionPaciente
 } from '../services/pacientesService';
 import { obtenerAseguradoras } from '../services/aseguradorasService';
 import { obtenerBarrios } from '../services/barriosService';
@@ -105,6 +106,19 @@ export const useEliminarPacienteMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: eliminarPaciente,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.all });
+    },
+  });
+};
+
+/**
+ * Mutación para actualizar solo la ubicación.
+ */
+export const useActualizarUbicacionPacienteMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, datos }) => actualizarUbicacionPaciente(id, datos),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS_PACIENTES.all });
     },

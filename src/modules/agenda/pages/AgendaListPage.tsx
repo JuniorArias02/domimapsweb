@@ -33,7 +33,7 @@ export default function AgendaListPage() {
 
   const agendas = response?.data || [];
   const meta = response?.meta;
-
+console.log(agendas);
   const getStatusBadge = (estado: string) => {
     switch (estado?.toUpperCase()) {
       case 'VIGENTE':
@@ -105,7 +105,7 @@ export default function AgendaListPage() {
             <tr className="bg-gray-50/50 border-b border-gray-100">
               <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest w-16">ID</th>
               <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Paciente</th>
-              <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Especialidad</th>
+              <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Servicio</th>
               <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Sesiones</th>
               <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Fecha Orden</th>
               <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Estado</th>
@@ -133,44 +133,71 @@ export default function AgendaListPage() {
               </tr>
             ) : (
               agendas.map((agenda) => (
-                <tr key={agenda.id_orden} className="hover:bg-blue-50/30 transition-colors group">
-                  <td className="px-6 py-5 font-bold text-gray-400 text-sm">#{agenda.id_orden}</td>
+                <tr key={agenda.id_orden_servicio || agenda.id_orden} className="hover:bg-blue-50/30 transition-colors group">
+                  <td className="px-6 py-5 font-bold text-gray-400 text-sm">#{agenda.id_orden_servicio || agenda.id_orden}</td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         <User size={18} />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors uppercase leading-tight line-clamp-1">{agenda.nombre_paciente}</p>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase mt-0.5">{agenda.identificacion_paciente}</p>
+                        <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors uppercase leading-tight line-clamp-1" title={agenda.nombre_paciente}>
+                          {agenda.nombre_paciente}
+                        </p>
+                        <p className="text-[11px] font-bold text-gray-400 uppercase mt-0.5">{agenda.identificacion}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2">
-                      <Stethoscope size={14} className="text-gray-400" />
-                      <span className="text-sm font-bold text-gray-700 uppercase">{agenda.nombre_especialidad}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div>
-                      <span className="inline-flex items-center gap-1.5 text-sm font-black text-gray-900">
-                        <Hash size={14} className="text-gray-400" />
-                        {agenda.numero_sesiones}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Stethoscope size={14} className="text-blue-500 shrink-0" />
+                        <span className="text-sm font-bold text-gray-700 uppercase line-clamp-1" title={agenda.nombre_servicio}>
+                          {agenda.nombre_servicio}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded w-fit">
+                        Cód: {agenda.codigo_servicio}
                       </span>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Cada {agenda.frecuencia_dias} días</p>
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
-                      <Clock size={14} className="text-gray-400" />
-                      {agenda.fecha_orden}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Hash size={14} className="text-gray-400" />
+                        <span className="text-sm font-black text-gray-900">
+                          {agenda.sesiones_completadas || 0} / {agenda.numero_sesiones}
+                        </span>
+                      </div>
+                      {agenda.frecuencia_dias && (
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                          Cada {agenda.frecuencia_dias} días
+                        </p>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider ${getStatusBadge(agenda.estado)}`}>
-                      {agenda.estado}
-                    </span>
+                    <div className="flex flex-col gap-1 text-sm font-bold text-gray-600">
+                      <div className="flex items-center gap-2" title="Fecha de Orden">
+                        <Calendar size={14} className="text-blue-500 shrink-0" />
+                        <span className="text-xs">{agenda.fecha_orden}</span>
+                      </div>
+                      {agenda.proxima_visita_estimada && (
+                        <div className="flex items-center gap-2" title="Próxima visita estimada">
+                          <Clock size={14} className="text-amber-500 shrink-0" />
+                          <span className="text-[10px] text-gray-500 truncate max-w-[120px]">
+                            Próx: {new Date(agenda.proxima_visita_estimada).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`px-2 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${getStatusBadge(agenda.estado_servicio || agenda.estado)}`} title="Estado del Servicio">
+                        {agenda.estado_servicio || agenda.estado}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">

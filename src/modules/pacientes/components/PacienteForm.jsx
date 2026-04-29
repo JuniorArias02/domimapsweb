@@ -20,6 +20,8 @@ const FORM_INICIAL = {
   fecha_ingreso: new Date().toISOString().split('T')[0],
   direccion: '',
   id_barrio: '',
+  latitud: '',
+  longitud: '',
   url_google_maps: '',
   estado: 'ACTIVO',
 };
@@ -59,6 +61,8 @@ export default function PacienteForm({ abierto, onCerrar, paciente }) {
           fecha_ingreso: paciente.fecha_ingreso || '',
           direccion: paciente.direccion || '',
           id_barrio: paciente.id_barrio || '',
+          latitud: paciente.latitud || '',
+          longitud: paciente.longitud || '',
           url_google_maps: paciente.url_google_maps || '',
           estado: paciente.estado || 'ACTIVO',
         });
@@ -95,7 +99,9 @@ export default function PacienteForm({ abierto, onCerrar, paciente }) {
     const payload = { 
       ...formulario, 
       id_aseguradora: Number(formulario.id_aseguradora),
-      id_barrio: formulario.id_barrio ? Number(formulario.id_barrio) : null 
+      id_barrio: formulario.id_barrio ? Number(formulario.id_barrio) : null,
+      latitud: formulario.latitud ? Number(formulario.latitud) : null,
+      longitud: formulario.longitud ? Number(formulario.longitud) : null
     };
 
     if (modoEdicion) {
@@ -243,6 +249,22 @@ export default function PacienteForm({ abierto, onCerrar, paciente }) {
                 onChange={manejarCambio} 
                 disabled={cargandoBarrios}
                 opciones={[{v:'', t:'Seleccione...'}, ...barrios.map(b => ({v: b.id_barrio, t: b.nombre}))]}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Campo 
+                label="Latitud" 
+                name="latitud" 
+                value={formulario.latitud} 
+                onChange={manejarCambio} 
+                placeholder="Ej: 4.60971" 
+              />
+              <Campo 
+                label="Longitud" 
+                name="longitud" 
+                value={formulario.longitud} 
+                onChange={manejarCambio} 
+                placeholder="Ej: -74.08175" 
               />
             </div>
             <Campo label="URL Google Maps (Opcional)" name="url_google_maps" value={formulario.url_google_maps} onChange={manejarCambio} placeholder="https://maps.google.com/..." />

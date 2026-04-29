@@ -9,13 +9,16 @@ import {
   ExternalLink,
   ShieldCheck,
   Heart,
-  UserCheck
+  UserCheck,
+  ClipboardList
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Tarjeta detallada de Paciente con relaciones (Aseguradora, Madrina, Barrio).
  */
 export default function PacienteCard({ paciente, onEditar }) {
+  const navigate = useNavigate();
   const {
     id_paciente,
     nombre_completo,
@@ -29,6 +32,8 @@ export default function PacienteCard({ paciente, onEditar }) {
     fecha_ingreso,
     direccion,
     url_google_maps,
+    latitud,
+    longitud,
     estado,
     aseguradora,
     madrina,
@@ -72,13 +77,23 @@ export default function PacienteCard({ paciente, onEditar }) {
             </div>
           </div>
           
-          <button
-            onClick={() => onEditar(paciente)}
-            className="p-2 text-gray-400 hover:text-[#2563EB] hover:bg-blue-50 rounded-lg transition-all"
-            title="Editar información"
-          >
-            <User size={18} />
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={() => navigate(`/pacientes/autorizacion/${id_paciente}`, { state: { paciente } })}
+              className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
+              title="Autorización"
+            >
+              <ClipboardList size={18} />
+            </button>
+            
+            <button
+              onClick={() => onEditar(paciente)}
+              className="p-2 text-gray-400 hover:text-[#2563EB] hover:bg-blue-50 rounded-lg transition-all"
+              title="Editar información"
+            >
+              <User size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -127,6 +142,11 @@ export default function PacienteCard({ paciente, onEditar }) {
                 {barrio && (
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-tight mt-0.5">
                     Sector: {barrio.nombre}
+                  </p>
+                )}
+                {(latitud || longitud) && (
+                  <p className="text-[10px] font-bold text-blue-500 mt-1 flex items-center gap-1">
+                    <span className="opacity-70">GPS:</span> {latitud || '?'}, {longitud || '?'}
                   </p>
                 )}
               </div>

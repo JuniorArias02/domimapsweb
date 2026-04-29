@@ -47,3 +47,13 @@ export const eliminarPaciente = async (id) => {
   const { data } = await api.delete(`${ENDPOINT}/${id}`);
   return data;
 };
+
+/**
+ * Actualiza la ubicación de un paciente (Latitud, Longitud, URL).
+ * @param {number|string} id
+ * @param {Object} ubicacion
+ */
+export const actualizarUbicacionPaciente = async (id, ubicacion) => {
+  const { data } = await api.post(`${ENDPOINT}/${id}/ubicacion`, ubicacion);
+  return data;
+};
