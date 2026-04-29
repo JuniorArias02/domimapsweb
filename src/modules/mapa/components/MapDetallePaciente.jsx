@@ -59,6 +59,10 @@ export default function MapDetallePaciente() {
               <span className="text-[10px] font-black bg-white/20 text-white px-2.5 py-1 rounded-md backdrop-blur-sm tracking-wide">
                 {paciente?.tipo_documento} {paciente?.identificacion}
               </span>
+              <span className="text-[10px] font-black bg-white/20 text-white px-2.5 py-1 rounded-md backdrop-blur-sm tracking-wide flex items-center gap-1">
+                {paciente?.sexo === 'M' ? 'Masc' : paciente?.sexo === 'F' ? 'Fem' : paciente?.sexo || ''}
+                {paciente?.fecha_nacimiento && ` • ${Math.floor((new Date() - new Date(paciente.fecha_nacimiento).getTime()) / 3.15576e+10)} años`}
+              </span>
               <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide shadow-sm ${
                 paciente?.estado === 'ACTIVO' ? 'bg-green-400 text-green-950' : 'bg-gray-200 text-gray-800'
               }`}>
@@ -145,7 +149,7 @@ export default function MapDetallePaciente() {
                     <span className="block text-[10px] text-gray-400 font-bold uppercase">Dirección</span>
                     <span className="text-sm font-bold text-gray-900 line-clamp-2">{paciente?.direccion}</span>
                     <span className="text-[11px] text-blue-600 font-bold flex items-center gap-1 mt-1">
-                      {paciente?.nombre_barrio}
+                      {paciente?.nombre_barrio || 'Sin barrio registrado'}
                     </span>
                   </div>
                 </div>
@@ -215,11 +219,14 @@ export default function MapDetallePaciente() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-gray-700 leading-tight">
-                        {dx.descripcion}
+                        {dx.descripcion || dx.observacion || 'Sin descripción'}
                       </p>
-                      {dx.es_principal === 1 && (
-                        <span className="text-[9px] font-black text-red-500 uppercase mt-1 block">Principal</span>
-                      )}
+                      <div className="flex gap-2 items-center mt-1">
+                        {dx.es_principal === 1 && (
+                          <span className="text-[9px] font-black text-red-500 uppercase block">Principal</span>
+                        )}
+                        <span className="text-[9px] font-bold text-gray-400 uppercase">{dx.tipo_diagnostico}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
