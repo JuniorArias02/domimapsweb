@@ -9,7 +9,7 @@ import { DASHBOARD_STATS_CONFIG } from '../constants/dashboardStats';
 
 export default function PanelPage() {
   const { data, isLoading, isError } = useDashboardQuery();
-
+  console.log("ESTO ES data", data)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
@@ -129,21 +129,21 @@ export default function PanelPage() {
           </div>
         </div>
 
-        {/* Card 2: Especialidades */}
+        {/* Card 2: Servicios */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-black text-gray-900 text-lg leading-none">Visitas por Especialidad</h3>
+            <h3 className="font-black text-gray-900 text-lg leading-none">Servicio más Solicitado</h3>
             <Activity size={20} className="text-amber-500" />
           </div>
           <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar max-h-[300px] pr-2">
-            {data.gestion_visitas?.visitas_especialidad?.map((spec, i) => (
+            {[].concat(data.kpis_operativos.servicio_mas_solicitado || []).map((spec, i) => (
               <div key={i} className="flex flex-col gap-3 group">
                 <div className="flex justify-between items-end">
-                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest group-hover:text-amber-600 transition-colors leading-none">{spec.especialidad}</span>
-                  <span className="text-[14px] font-black text-gray-900 leading-none">{spec.total_visitas} <span className="text-[9px] text-gray-400 font-bold ml-1 uppercase">Visitas</span></span>
+                  <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest group-hover:text-amber-600 transition-colors leading-none truncate pr-2" title={spec?.servicio}>{spec?.servicio}</span>
+                  <span className="text-[14px] font-black text-gray-900 leading-none whitespace-nowrap">{spec?.total_visitas} <span className="text-[9px] text-gray-400 font-bold ml-1 uppercase">Visitas</span></span>
                 </div>
                 <div className="w-full bg-gray-50 h-2.5 rounded-full border border-gray-100 overflow-hidden border">
-                  <div className="bg-gradient-to-r from-amber-300 to-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min((spec.total_visitas / 600) * 100, 100)}%` }} />
+                  <div className="bg-gradient-to-r from-amber-300 to-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${Math.min(((spec?.total_visitas || 0) / 2000) * 100, 100)}%` }} />
                 </div>
               </div>
             ))}

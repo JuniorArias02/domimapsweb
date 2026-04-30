@@ -4,7 +4,7 @@ import { useOrdenesMedicasQuery } from '../queries/useOrdenesMedicasQuery';
 
 export default function OrdenesMedicasModal({ abierto, onCerrar, idIngreso }) {
   const { data: respuesta, isLoading, isError } = useOrdenesMedicasQuery(idIngreso);
-  
+  console.log("ESTO ES respuesta", respuesta)
   // Manejar si la data viene en .data o es el objeto directo (siendo defensivos)
   const ordenes = Array.isArray(respuesta) ? respuesta : (respuesta?.data || []);
 
@@ -116,7 +116,7 @@ export default function OrdenesMedicasModal({ abierto, onCerrar, idIngreso }) {
                           </div>
                           <div className="flex-1">
                             <p className="text-[9px] font-black text-gray-400 uppercase leading-none mb-1">Profesional Asignado</p>
-                            <p className="text-xs font-bold text-gray-700">ID: {srv.id_profesional_asignado}</p>
+                            <p className="text-xs font-bold text-gray-700">{srv.profesional.nombre_completo}</p>
                           </div>
                         </div>
                       </div>
