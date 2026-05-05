@@ -95,7 +95,7 @@ export default function MapPacientesMenu() {
       {/* Modern Search & Filters Area */}
       <div className={`p-6 bg-white border-b border-gray-100 space-y-5 transition-all duration-300 ${isMapSidebarOpen ? 'pl-10' : ''}`}>
         {/* Status Filter Grid */}
-        <div>
+        {/* <div>
           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Estado del Paciente</label>
           <div className="grid grid-cols-3 gap-2 bg-gray-50/50 p-1.5 rounded-2xl border border-gray-100">
             <button
@@ -122,11 +122,11 @@ export default function MapPacientesMenu() {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
 
 
         <div className="space-y-4">
-          <div className="relative">
+          {/* <div className="relative">
             <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Comuna / Sector</label>
             <div className="relative group">
               <select
@@ -154,7 +154,7 @@ export default function MapPacientesMenu() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           <div className="relative">
             <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Aseguradora</label>

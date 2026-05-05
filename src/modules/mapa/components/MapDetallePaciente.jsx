@@ -18,7 +18,7 @@ export default function MapDetallePaciente() {
 
   const isMenuOpen = activeMenuId === MENU_IDS.DETALLE_PACIENTE;
   const { data: detailData, isLoading, isError } = useMapaDetallePacienteQuery(selectedPacienteId);
-
+  console.log("LO QUE LLEGA EN EL DETALLE DEL PACIENTE", detailData)
   if (!selectedPacienteId) return null;
 
   const { paciente, ultima_visita, diagnosticos } = detailData?.data || {};

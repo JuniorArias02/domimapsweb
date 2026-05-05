@@ -171,35 +171,72 @@ export default function MapOptimizadorMenu() {
               acc[block].push(v);
               return acc;
             }, {})
-          ).sort(([a],[b]) => parseInt(a) - parseInt(b)).map(([block, blockVisits]) => (
+          ).sort(([a],[b]) => parseInt(a) - parseInt(b)).map(([block, blockVisits]) => {
+            const getBlockColor = (blockNum) => {
+              const colors = [
+                { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-100', icon: 'text-blue-600', line: 'bg-blue-100', leftBorder: 'border-l-blue-500' },
+                { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-100', icon: 'text-green-600', line: 'bg-green-100', leftBorder: 'border-l-green-500' },
+                { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-100', icon: 'text-purple-600', line: 'bg-purple-100', leftBorder: 'border-l-purple-500' },
+                { bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-100', icon: 'text-pink-600', line: 'bg-pink-100', leftBorder: 'border-l-pink-500' },
+                { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100', icon: 'text-indigo-600', line: 'bg-indigo-100', leftBorder: 'border-l-indigo-500' },
+                { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-100', icon: 'text-teal-600', line: 'bg-teal-100', leftBorder: 'border-l-teal-500' },
+                { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-100', icon: 'text-rose-600', line: 'bg-rose-100', leftBorder: 'border-l-rose-500' },
+                { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-100', icon: 'text-orange-600', line: 'bg-orange-100', leftBorder: 'border-l-orange-500' },
+                { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-100', icon: 'text-cyan-600', line: 'bg-cyan-100', leftBorder: 'border-l-cyan-500' },
+                { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100', icon: 'text-emerald-600', line: 'bg-emerald-100', leftBorder: 'border-l-emerald-500' }
+              ];
+              const num = parseInt(blockNum);
+              const index = isNaN(num) ? 0 : ((num - 1) % colors.length + colors.length) % colors.length;
+              return colors[index];
+            };
+            const colors = getBlockColor(block);
+            
+            return (
             <div key={block} className="space-y-2 mb-6">
               <div className="flex items-center gap-3 px-1 mt-4 mb-2">
-                <div className="h-[2px] bg-amber-100 flex-1"></div>
-                <div className="flex items-center gap-2 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 shadow-sm">
-                  <Layers size={12} className="text-amber-600" />
-                  <span className="text-[10px] font-black text-amber-700 uppercase">Bloque {block}</span>
+                <div className={`h-[2px] ${colors.line} flex-1`}></div>
+                <div className={`flex items-center gap-2 ${colors.bg} px-3 py-1 rounded-full border ${colors.border} shadow-sm`}>
+                  <Layers size={12} className={colors.icon} />
+                  <span className={`text-[10px] font-black ${colors.text} uppercase`}>Bloque {block}</span>
                 </div>
-                <div className="h-[2px] bg-amber-100 flex-1"></div>
+                <div className={`h-[2px] ${colors.line} flex-1`}></div>
               </div>
 
               {blockVisits.map((v, idx) => (
-                <div key={`${v.id_paciente}-${idx}`} className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group border-l-4 border-l-amber-500">
+                <div key={`${v.id_paciente}-${idx}`} className={`bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group border-l-4 ${colors.leftBorder}`}>
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center bg-gray-50 text-gray-600 font-black text-[10px]">
                       #{v.orden_en_ruta}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h4 className="text-[11px] font-black text-gray-900 uppercase leading-tight">{v.paciente}</h4>
-                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase mt-1">
-                        <MapPin size={10} />
-                        <span className="truncate max-w-[180px]">ID: {v.id_paciente}</span>
+                      <div className="flex flex-col gap-1 mt-1.5">
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase">
+                          <MapPin size={10} />
+                          <span className="truncate">ID: {v.id_paciente}</span>
+                        </div>
+                        {v.fecha_programada && (
+                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-500 uppercase">
+                            <Calendar size={10} />
+                            <span>{new Date(v.fecha_programada).toLocaleString('es-CO', { 
+                              year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                            })}</span>
+                          </div>
+                        )}
+                        {optimizadorFilters.tipo_filtro === 'profesional' && v.nombre_profesional && (
+                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-amber-500 uppercase">
+                            <Sparkles size={10} />
+                            <span className="truncate">{v.nombre_profesional}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

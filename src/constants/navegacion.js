@@ -4,7 +4,7 @@ export const itemsNavegacion = [
   { icono: Home, etiqueta: 'Panel', ruta: '/panel' },
   { icono: Map, etiqueta: 'Mapa', ruta: '/mapa' },
   { icono: Users, etiqueta: 'Pacientes', ruta: '/pacientes' },
-  { icono: Calendar, etiqueta: 'Atenciones', ruta: '/agenda' }
+  { icono: Calendar, etiqueta: 'Atenciones', ruta: '/agendamiento' }
 ];
 
 export const itemsNavegacionSecundaria = [

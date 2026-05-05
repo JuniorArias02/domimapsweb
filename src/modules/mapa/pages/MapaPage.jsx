@@ -14,11 +14,11 @@ import MapPacientesMenu from '../components/MapPacientesMenu';
 import MapProfesionalesMenu from '../components/MapProfesionalesMenu';
 import MapDetallePaciente from '../components/MapDetallePaciente';
 import MapComunasMenu from '../components/MapComunasMenu';
-import MapPacientesComunaMenu from '../components/MapPacientesComunaMenu';
 import MapRutasGlobalesMenu from '../components/MapRutasGlobalesMenu';
 import MapOptimizadorMenu from '../components/MapOptimizadorMenu';
 import MapSearchBox from '../components/MapSearchBox';
 import MapRuler from '../components/MapRuler';
+import MapToolbox from '../components/MapToolbox';
 import { MapChangeView } from '../components/MapChangeView';
 
 // --- Layers ---
@@ -117,7 +117,6 @@ const MapaPage = () => {
       <MapProfesionalesMenu />
       <MapDetallePaciente />
       <MapComunasMenu />
-      <MapPacientesComunaMenu />
       <MapRutasGlobalesMenu />
       <MapOptimizadorMenu />
 
@@ -138,16 +137,7 @@ const MapaPage = () => {
 
         <MapRuler />
         
-        {/* Marcador del Checkpoint Principal (Dorado) */}
-        <Marker position={INITIAL_POSITION} icon={checkpointIcon}>
-          <Popup>
-            <div className="font-bold text-gray-900 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-              Punto de control inicial
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Ubicación estratégica de referencia.</div>
-          </Popup>
-        </Marker>
+
 
         {/* Layers Modulares */}
         <PacientesLayer 
@@ -184,38 +174,8 @@ const MapaPage = () => {
 
       </MapContainer>
 
-      {/* Floating Map Controls (Ruler, etc) */}
-      <div className="absolute bottom-10 right-8 z-[400] flex flex-col gap-3">
-        {/* Botón de Limpiar Regla (Solo aparece si hay puntos) */}
-        {isRulerActive && (
-          <button
-            onClick={() => useMapaStore.getState().clearRuler()}
-            title="Borrar medición"
-            className="w-12 h-12 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-xl border border-gray-100 text-red-500 hover:bg-red-50 hover:border-red-100 transition-all animate-in zoom-in duration-300"
-          >
-            <X size={20} />
-          </button>
-        )}
-
-        {/* Botón Principal de Regla */}
-        <button
-          onClick={toggleRuler}
-          title={isRulerActive ? 'Desactivar Regla' : 'Activar Regla (Medir Distancia)'}
-          className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-300 border backdrop-blur-md ${
-            isRulerActive 
-              ? 'bg-blue-600 border-blue-400 text-white' 
-              : 'bg-white/90 border-gray-100 text-gray-500 hover:text-blue-600 hover:shadow-blue-500/10'
-          }`}
-        >
-          {isRulerActive ? <MousePointer2 size={26} /> : <Ruler size={26} />}
-          {isRulerActive && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500"></span>
-            </span>
-          )}
-        </button>
-      </div>
+      {/* Floating Map Controls (Ruler, Comunas, etc) */}
+      <MapToolbox />
     </div>
   );
 }

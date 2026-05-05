@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, ChevronLeft, Layers, BriefcaseMedical, Building2, Globe, Zap } from 'lucide-react';
+import { Users, ChevronLeft, Layers, BriefcaseMedical, Globe, Zap } from 'lucide-react';
 import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 
 export default function MapSidebar() {
@@ -14,8 +14,6 @@ export default function MapSidebar() {
     toggleRutasGlobalesMenu,
     mostrarOptimizador,
     toggleOptimizadorMenu,
-    toggleComunasMenu,
-    activeMenuId,
     tipoVistaPacientes,
     setTipoVistaPacientes
   } = useMapaStore();
@@ -24,7 +22,6 @@ export default function MapSidebar() {
   const isPacientesActive = mostrarPacientes;
   const isProfesionalesActive = mostrarProfesionales;
   const isRutasGlobalActive = mostrarRutasGlobales;
-  const isComunasActive = activeMenuId === MENU_IDS.COMUNAS;
 
   return (
     <div
@@ -97,35 +94,6 @@ export default function MapSidebar() {
               </div>
             </div>
 
-            {/* Sub-opciones de Pacientes (Aislado para mejor UX) */}
-            {isPacientesActive && (
-              <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-50/50 rounded-2xl border border-gray-100 mt-1 mx-1 animate-in slide-in-from-top-2 duration-300">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTipoVistaPacientes('GENERAL');
-                  }}
-                  className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all ${tipoVistaPacientes === 'GENERAL'
-                      ? 'bg-white text-[#2563EB] shadow-sm border border-blue-100'
-                      : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                >
-                  General
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTipoVistaPacientes('POR_COMUNA');
-                  }}
-                  className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all ${tipoVistaPacientes === 'POR_COMUNA'
-                      ? 'bg-white text-[#2563EB] shadow-sm border border-blue-100'
-                      : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                >
-                  Por Comuna
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Control: Mostrar Profesionales */}
@@ -158,40 +126,6 @@ export default function MapSidebar() {
             <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${isProfesionalesActive ? 'bg-[#10B981]' : 'bg-gray-200'
               }`}>
               <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isProfesionalesActive ? 'left-6' : 'left-1'
-                }`}></div>
-            </div>
-          </div>
-
-          {/* Control: Mostrar Comunas */}
-          <div
-            onClick={toggleComunasMenu}
-            className={`flex items-center justify-between cursor-pointer group p-3.5 rounded-2xl border transition-all duration-300 mt-2 ${isComunasActive
-                ? 'bg-purple-50/50 border-purple-100 shadow-sm shadow-purple-500/5'
-                : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'
-              }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500 ${isComunasActive
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 rotate-0'
-                  : 'bg-gray-100 text-gray-400 rotate-[-10deg] group-hover:rotate-0 group-hover:bg-gray-200'
-                }`}>
-                <Building2 size={22} />
-              </div>
-              <div>
-                <span className={`block text-sm font-black transition-colors ${isComunasActive ? 'text-purple-600' : 'text-gray-700'
-                  }`}>
-                  Comunas
-                </span>
-                <span className="text-[11px] text-gray-400 font-medium block mt-0.5 leading-none">
-                  Delimitación urbana
-                </span>
-              </div>
-            </div>
-
-            {/* Custom Switch Indicator */}
-            <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${isComunasActive ? 'bg-purple-600' : 'bg-gray-200'
-              }`}>
-              <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isComunasActive ? 'left-6' : 'left-1'
                 }`}></div>
             </div>
           </div>
