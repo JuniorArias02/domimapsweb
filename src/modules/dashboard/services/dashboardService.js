@@ -5,4 +5,8 @@ export const dashboardService = {
     const { data } = await api.get('/dashboard');
     return data;
   },
+  getIndicadoresData: async () => {
+    const { data } = await api.get('/dashboard/indicadores');
+    return data;
+  },
 };

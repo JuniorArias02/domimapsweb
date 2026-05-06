@@ -187,7 +187,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mt-12 gap-2 text-gray-400">
              <MapPin size={14} className="opacity-70" />
              <p className="text-center text-[11px] font-medium uppercase tracking-wider">
-               Sistema Domiciliaria v2.0 • Acceso Autorizado
+               Sistema Domiciliaria • Acceso Autorizado
              </p>
           </div>
         </div>

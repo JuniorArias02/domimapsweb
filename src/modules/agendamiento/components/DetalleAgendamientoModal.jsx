@@ -44,7 +44,7 @@ export default function DetalleAgendamientoModal({ isOpen, onClose, agenda }) {
               <ClipboardList size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-gray-900 tracking-tight">Detalle de Orden #{agenda.id_orden}</h2>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Detalle del ingreso #{agenda.ingreso}</h2>
               <p className="text-gray-500 text-sm font-medium">Creada el {agenda.fecha_orden}</p>
             </div>
           </div>

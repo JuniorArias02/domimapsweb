@@ -129,7 +129,7 @@ export default function AgendamientoListPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/30">
-                <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest"><div className="flex items-center gap-2"><Hash size={12}/> ID Orden</div></th>
+                <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest"><div className="flex items-center gap-2"><Hash size={12}/>ingreso</div></th>
                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest"><div className="flex items-center gap-2"><Calendar size={12}/> Fecha</div></th>
                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest"><div className="flex items-center gap-2"><User size={12}/> Paciente</div></th>
                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest"><div className="flex items-center gap-2"><ClipboardList size={12}/> Autorización</div></th>
@@ -142,7 +142,7 @@ export default function AgendamientoListPage() {
                 agendas.map((agenda) => (
                   <tr key={agenda.id_orden} className="group hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-5">
-                      <span className="text-sm font-black text-gray-900 bg-gray-100 px-3 py-1 rounded-xl">#{agenda.id_orden}</span>
+                      <span className="text-sm font-black text-gray-900 bg-gray-100 px-3 py-1 rounded-xl">#{agenda.ingreso}</span>
                     </td>
                     <td className="px-6 py-5">
                       <span className="text-sm font-bold text-gray-600">{agenda.fecha_orden}</span>
