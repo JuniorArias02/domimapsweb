@@ -22,7 +22,6 @@ export default function PacientesPage() {
     cerrarModal,
   } = usePacientes();
   
-  console.log(pacientesFiltrados)
   return (
     <div className="space-y-6">
       {/* Encabezado */}

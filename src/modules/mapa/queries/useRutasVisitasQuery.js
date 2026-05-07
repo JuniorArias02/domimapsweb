@@ -12,8 +12,6 @@ export const useRutasVisitasQuery = () => {
       const params = Object.fromEntries(
         Object.entries(profesionalesFilters).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
       );
-      
-      console.log('Fetching rutas with params:', params);
       return obtenerRutasVisitas(params);
     },
     // Solo fetching si la capa está activa y hay un profesional seleccionado

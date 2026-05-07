@@ -46,10 +46,6 @@ const AutorizacionPages = () => {
     isFetching 
   } = useAutorizaciones(id);
 
-  console.log('--- DEPURACIÓN ÓRDENES ---');
-  console.log('Lista de Autorizaciones:', autorizaciones);
-  console.log('ID Ingreso Seleccionado para Modal:', idIngresoSeleccionado);
-  
   const nombrePaciente = paciente?.nombre_completo?.trim() || 'Paciente';
 
   return (

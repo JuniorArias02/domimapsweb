@@ -63,8 +63,7 @@ export default function CrearAgendamientoPage() {
       }))
     };
 
-    console.log("JSON Payload a enviar al backend:", JSON.stringify(payload, null, 2));
-    // Aquí iría el POST: await agendamientoService.crearOrden(payload);
+
   };
 
   // Renderers para las opciones del Autocomplete

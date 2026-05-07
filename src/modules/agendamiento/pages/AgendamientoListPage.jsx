@@ -34,8 +34,8 @@ export default function AgendamientoListPage() {
 
   // Query
   const { data, isLoading, isError, isFetching } = useAgendasQuery(params);
-
   const agendas = data?.data || [];
+  
   const meta = data?.meta || { current_page: 1, last_page: 1 };
 
   const handleSearchChange = (e) => {
@@ -74,13 +74,22 @@ export default function AgendamientoListPage() {
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Agendamiento</h1>
           <p className="text-gray-500 font-medium">Gestiona y consulta las órdenes y servicios programados.</p>
         </div>
-        <button 
-          onClick={() => navigate('/agendamiento/nueva')}
-          className="flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm uppercase tracking-wider"
-        >
-          <Plus size={18} />
-          Agendar
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => navigate('/agendamiento/nueva-dos')}
+            className="flex items-center justify-center gap-2 bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-blue-50 px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 text-sm uppercase tracking-wider shadow-sm"
+          >
+            <Plus size={18} />
+            Método 2
+          </button>
+          <button 
+            onClick={() => navigate('/agendamiento/nueva')}
+            className="flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm uppercase tracking-wider"
+          >
+            <Plus size={18} />
+            Agendar
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar */}

@@ -4,7 +4,6 @@ import { useOrdenesMedicasQuery } from '../queries/useOrdenesMedicasQuery';
 
 export default function OrdenesMedicasModal({ abierto, onCerrar, idIngreso }) {
   const { data: respuesta, isLoading, isError } = useOrdenesMedicasQuery(idIngreso);
-  console.log("ESTO ES respuesta", respuesta)
   // Manejar si la data viene en .data o es el objeto directo (siendo defensivos)
   const ordenes = Array.isArray(respuesta) ? respuesta : (respuesta?.data || []);
 
