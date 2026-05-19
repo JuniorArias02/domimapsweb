@@ -67,7 +67,7 @@ export default function LoginPage() {
                   ))}
                </div>
                <div className="text-white">
-                 <p className="text-2xl font-black">+5000</p>
+                 <p className="text-2xl font-black">3000</p>
                  <p className="text-[10px] font-bold uppercase text-blue-200 tracking-wider">Rutas Mensuales</p>
                </div>
             </div>
@@ -186,7 +186,7 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-center mt-12 gap-2 text-gray-400">
              <MapPin size={14} className="opacity-70" />
-             <p className="text-center text-[11px] font-medium uppercase tracking-wider">
+             <p className="text-center text-[11px] font-medium uppercase tracking-wider text-gray ">
                Sistema Domiciliaria • Acceso Autorizado
              </p>
           </div>

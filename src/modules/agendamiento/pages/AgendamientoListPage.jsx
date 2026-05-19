@@ -35,7 +35,7 @@ export default function AgendamientoListPage() {
   // Query
   const { data, isLoading, isError, isFetching } = useAgendasQuery(params);
   const agendas = data?.data || [];
-  
+  console.log(agendas);
   const meta = data?.meta || { current_page: 1, last_page: 1 };
 
   const handleSearchChange = (e) => {
@@ -55,6 +55,12 @@ export default function AgendamientoListPage() {
   const openDetail = (agenda) => {
     setSelectedAgenda(agenda);
     setIsModalOpen(true);
+  };
+
+  const formatFecha = (fechaStr) => {
+    if (!fechaStr) return 'No registrada';
+    const [year, month, day] = fechaStr.split('T')[0].split(' ')[0].split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const getStatusStyle = (status) => {
@@ -154,7 +160,7 @@ export default function AgendamientoListPage() {
                       <span className="text-sm font-black text-gray-900 bg-gray-100 px-3 py-1 rounded-xl">#{agenda.ingreso}</span>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-sm font-bold text-gray-600">{agenda.fecha_orden}</span>
+                      <span className="text-sm font-bold text-gray-600">{formatFecha(agenda.fecha_orden)}</span>
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex flex-col">

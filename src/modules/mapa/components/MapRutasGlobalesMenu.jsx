@@ -30,14 +30,25 @@ export default function MapRutasGlobalesMenu() {
 
 
 
-  if (!isMenuOpen) return null;
+  if (!mostrarRutasGlobales) return null;
 
   return (
     <div 
       className={`absolute top-20 bottom-0 w-98 bg-[#F9FAFB] shadow-2xl z-[390] transition-all duration-300 flex flex-col border-l border-gray-100 ${
         isMapSidebarOpen ? 'left-80' : 'left-0'
-      }`}
+      } ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
+      {/* Viñeta para volver a abrir cuando está cerrado */}
+      <button
+        onClick={() => setActiveMenu(MENU_IDS.OPTIMIZADOR_GLOBAL)}
+        className={`absolute top-24 w-10 h-14 bg-white border border-gray-200 border-l-0 rounded-r-xl shadow-md flex items-center justify-center text-gray-400 hover:text-[#3B82F6] hover:bg-gray-50 focus:outline-none transition-all duration-300 ${
+          isMenuOpen ? 'opacity-0 -right-5 pointer-events-none' : 'opacity-100 -right-10'
+        }`}
+        title="Rutas Globales"
+      >
+        <Globe size={20} />
+      </button>
+
       {/* Header */}
       <div className={`px-6 py-5 bg-white border-b border-gray-100 flex items-center justify-between transition-all duration-300 ${isMapSidebarOpen ? 'pl-10' : ''}`}>
         <div>
@@ -150,7 +161,7 @@ export default function MapRutasGlobalesMenu() {
       </div>
 
       {/* Selector de Bloques (Cuadrícula de 4) con Scroll */}
-      {availableBlocks.length > 0 && (
+      {availableBlocks.length > 0 && isMenuOpen && (
         <div className="absolute left-full top-10 w-48 max-h-[75vh] bg-white/95 backdrop-blur-md shadow-2xl border border-l-0 border-gray-100 rounded-r-3xl flex flex-col p-4 gap-4 animate-in slide-in-from-left-2 duration-500">
           <div className="flex items-center gap-2 opacity-30 ml-1 flex-shrink-0">
             <Layers size={14} className="text-gray-500" />

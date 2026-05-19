@@ -49,6 +49,13 @@ export default function PacienteCard({ paciente, onEditar }) {
 
   const esActivo = estado === 'ACTIVO';
 
+
+  const formatFecha = (fechaStr) => {
+    if (!fechaStr) return 'No registrada';
+    const [year, month, day] = fechaStr.split('T')[0].split(' ')[0].split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group">
       {/* Cabecera */}
@@ -97,7 +104,7 @@ export default function PacienteCard({ paciente, onEditar }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <InfoMini icon={Calendar} label="Ingreso" value={fecha_ingreso} />
+          <InfoMini icon={Calendar} label="Ingreso" value={formatFecha(fecha_ingreso)} />
           <InfoMini icon={Heart} label="Sexo" value={sexo === 'F' ? 'Femenino' : 'Masculino'} />
         </div>
       </div>
@@ -166,8 +173,8 @@ export default function PacienteCard({ paciente, onEditar }) {
       </div>
 
       <div className="px-5 py-3 bg-gray-50/50 border-t border-gray-50 flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-tight">
-         <span>NACIMIENTO: {fecha_nacimiento}</span>
-         <span>REF: #{id_paciente}</span>
+         <span>NACIMIENTO: {formatFecha(fecha_nacimiento)}</span>
+         {/* <span>REF: #{id_paciente}</span> */}
       </div>
     </div>
   );
