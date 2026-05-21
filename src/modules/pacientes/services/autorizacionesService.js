@@ -11,13 +11,8 @@ export const obtenerAutorizacionesPorPaciente = async (idPaciente) => {
   return data;
 };
 
-/**
- * Crea una nueva autorización.
- * @param {Object} autorizacion 
- */
 export const crearAutorizacion = async (autorizacion) => {
-  // Ajustar el endpoint según sea necesario para crear
-  const { data } = await api.post(`${ENDPOINT}/autorizaciones`, autorizacion);
+  const { data } = await api.post(`${ENDPOINT}/con-sesiones`, autorizacion);
   return data;
 };
 

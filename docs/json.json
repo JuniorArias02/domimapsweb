@@ -1,0 +1,23 @@
+{
+  "autorizacion": "4292224",
+  "id_paciente": 16,
+  "observacion": "pruebas",
+  "servicios": [
+    {
+      "id_servicio": 1,
+      "id_profesional": 1,
+      "numero_sesiones": 1,
+      "frecuencia_dias": 1,
+      "fecha_inicio": "2026-05-21 13:35",
+      "fecha_programada": "2026-05-21 13:35"
+    },
+    {
+      "id_servicio": 1,
+      "id_profesional": 1,
+      "numero_sesiones": 1,
+      "frecuencia_dias": 1,
+      "fecha_inicio": "2026-05-21 13:51",
+      "fecha_programada": "2026-05-23 13:51"
+    }
+  ]
+}

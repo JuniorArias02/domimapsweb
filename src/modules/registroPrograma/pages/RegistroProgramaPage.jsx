@@ -51,13 +51,13 @@ export default function RegistroProgramaPage() {
           <p className="text-gray-500 font-medium">Consulta y gestiona los pacientes activos en el programa.</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          {/* <button 
             onClick={() => navigate('/registro-programa/autorizaciones')}
             className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-blue-200 text-gray-700 hover:text-[#2563EB] px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 text-sm uppercase tracking-wider shadow-sm"
           >
             <FileCheck size={18} />
             Autorizaciones
-          </button>
+          </button> */}
           <button 
             onClick={() => navigate('/registro-programa/nuevo')}
             className="flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm uppercase tracking-wider"

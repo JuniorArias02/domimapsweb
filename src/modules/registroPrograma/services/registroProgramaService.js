@@ -32,5 +32,27 @@ export const registroProgramaService = {
   obtenerOrdenMedicaIngreso: async (ingreso) => {
     const response = await api.get(`registro-programa/ingreso/${ingreso}/orden-medica`);
     return response.data;
+  },
+
+  /**
+   * Buscar servicios médicos
+   * @param {string} q - Cadena de búsqueda (nombre o código de servicio)
+   * @returns {Promise<Array>} Lista de servicios
+   */
+  buscarServicios: async (q) => {
+    if (!q) return [];
+    const response = await api.get('servicios/buscar', { params: { q } });
+    return response.data?.data || [];
+  },
+
+  /**
+   * Verificar si un código de autorización está en uso
+   * @param {string} autorizacion - Código de autorización a verificar
+   * @returns {Promise<Object>} Resultado con en_uso y descripcion
+   */
+  verificarAutorizacion: async (autorizacion) => {
+    if (!autorizacion) return { en_uso: false };
+    const response = await api.get('ingresos/verificar-autorizacion', { params: { autorizacion } });
+    return response.data;
   }
 };

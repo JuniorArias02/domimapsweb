@@ -13,9 +13,11 @@ import {
   Plus,
   Eye
 } from 'lucide-react';
-import { useAutorizacionesPacienteQuery } from '../queries/useAutorizacionesPacienteQuery';
+import Swal from 'sweetalert2';
+import { useAutorizacionesPacienteQuery, useCrearAutorizacionPacienteMutation } from '../queries/useAutorizacionesPacienteQuery';
 import { usePacienteDetalleQuery } from '../../pacientes/queries/usePacientesQuery';
 import OrdenMedicaModal from '../components/OrdenMedicaModal';
+import RegistroAutorizacionModal from '../components/RegistroAutorizacionModal';
 
 export default function AutorizacionPacientePage() {
   const { id } = useParams();
@@ -33,13 +35,51 @@ export default function AutorizacionPacientePage() {
     setModalOrdenesAbierto(true);
   };
 
-  // Queries
+  // Modal State for New Authorization Form
+  const [modalFormAbierto, setModalFormAbierto] = useState(false);
+
+  // Queries & Mutations
   const { data: pacienteData, isLoading: isLoadingPaciente } = usePacienteDetalleQuery(id);
   const { data: autorizacionesData, isLoading: isLoadingAutorizaciones, isError, isFetching } = useAutorizacionesPacienteQuery(id);
+  console.log("autorizaciones", autorizacionesData);
+  const crearMutation = useCrearAutorizacionPacienteMutation(id);
+
+  const manejarGuardarAutorizacion = async (datos) => {
+    try {
+      await crearMutation.mutateAsync({ ...datos, id_paciente: id });
+      setModalFormAbierto(false);
+      
+      Swal.fire({
+        title: '¡Registro Exitoso!',
+        text: 'La autorización y sus servicios se han guardado de manera correcta.',
+        icon: 'success',
+        confirmButtonText: 'Entendido',
+        customClass: {
+          popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+          confirmButton: 'bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        },
+        buttonsStyling: false
+      });
+    } catch (err) {
+      console.error("Error al guardar autorización:", err);
+      
+      Swal.fire({
+        title: 'Error al Registrar',
+        text: err?.response?.data?.error || err?.response?.data?.message || 'Ocurrió un error inesperado al procesar la solicitud.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        customClass: {
+          popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+          confirmButton: 'bg-[#EF4444] hover:bg-[#DC2626] text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        },
+        buttonsStyling: false
+      });
+    }
+  };
 
   const paciente = pacienteDesdeState || pacienteData?.data || pacienteData || null;
   const autorizaciones = autorizacionesData?.data || [];
-
+console.log("autorizaciones", autorizaciones);
   const mostrarCargandoPaciente = !paciente && isLoadingPaciente;
   const nombreAseguradora = paciente?.aseguradora?.nombre || paciente?.nombre_aseguradora;
 
@@ -76,14 +116,21 @@ export default function AutorizacionPacientePage() {
   return (
     <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
       
-      {/* Botón de volver */}
-      <div>
+      {/* Botón de volver y Nueva Autorización */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <button
           onClick={() => navigate('/RegistroAlPrograma')}
           className="group inline-flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-900 text-gray-600 hover:text-gray-900 px-5 py-2.5 rounded-2xl font-bold transition-all active:scale-95 text-xs uppercase tracking-wider shadow-sm"
         >
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Volver al Registro
+        </button>
+        <button
+          onClick={() => setModalFormAbierto(true)}
+          className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-xs uppercase tracking-wider"
+        >
+          <Plus size={16} />
+          Nueva Autorización
         </button>
       </div>
 
@@ -184,6 +231,12 @@ export default function AutorizacionPacientePage() {
                     Número Autorización
                   </div>
                 </th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={12} />
+                    Estado
+                  </div>
+                </th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
                   Opciones
                 </th>
@@ -205,7 +258,22 @@ export default function AutorizacionPacientePage() {
                     </td>
                     <td className="px-8 py-5">
                       <span className="text-sm font-black text-[#2563EB] bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100/50">
-                        {auth.autorizacion}
+                        {auth.autorizacion || "sin estado"}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border uppercase tracking-wider ${
+                        auth.estado === 'VIGENTE' 
+                          ? 'bg-green-50 text-green-700 border-green-100' 
+                          : auth.estado === 'SUSPENDIDA'
+                          ? 'bg-amber-50 text-amber-700 border-amber-100'
+                          : auth.estado === 'VENCIDA'
+                          ? 'bg-rose-50 text-rose-700 border-rose-100'
+                          : auth.estado === 'FINALIZADA'
+                          ? 'bg-blue-50 text-blue-700 border-blue-100'
+                          : 'bg-gray-50 text-gray-700 border-gray-100'
+                      }`}>
+                        {auth.estado}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-right">
@@ -221,7 +289,7 @@ export default function AutorizacionPacientePage() {
                 ))
               ) : !isLoadingAutorizaciones && !isError && (
                 <tr>
-                  <td colSpan="4" className="py-24 text-center">
+                  <td colSpan="5" className="py-24 text-center">
                     <div className="flex flex-col items-center justify-center opacity-40">
                       <FileCheck size={48} className="mb-4 text-gray-300" />
                       <h4 className="text-lg font-black text-gray-900 uppercase tracking-widest">Sin Autorizaciones</h4>
@@ -232,7 +300,7 @@ export default function AutorizacionPacientePage() {
               )}
               {isError && (
                 <tr>
-                  <td colSpan="4" className="py-24 text-center text-red-500 font-bold">
+                  <td colSpan="5" className="py-24 text-center text-red-500 font-bold">
                     Ocurrió un error al obtener las autorizaciones del paciente.
                   </td>
                 </tr>
@@ -246,6 +314,14 @@ export default function AutorizacionPacientePage() {
         abierto={modalOrdenesAbierto}
         onCerrar={() => setModalOrdenesAbierto(false)}
         idIngreso={idIngresoSeleccionado}
+      />
+
+      <RegistroAutorizacionModal
+        abierto={modalFormAbierto}
+        onCerrar={() => setModalFormAbierto(false)}
+        onGuardar={manejarGuardarAutorizacion}
+        paciente={paciente}
+        cargando={crearMutation.isPending}
       />
     </div>
   );
