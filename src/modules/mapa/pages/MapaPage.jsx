@@ -16,6 +16,7 @@ import MapDetallePaciente from '../components/MapDetallePaciente';
 import MapComunasMenu from '../components/MapComunasMenu';
 import MapRutasGlobalesMenu from '../components/MapRutasGlobalesMenu';
 import MapOptimizadorMenu from '../components/MapOptimizadorMenu';
+import MapCrearRutasMenu from '../components/MapCrearRutasMenu';
 import MapSearchBox from '../components/MapSearchBox';
 import MapRuler from '../components/MapRuler';
 import MapToolbox from '../components/MapToolbox';
@@ -26,6 +27,7 @@ import { PacientesLayer } from '../components/layers/PacientesLayer';
 import { ProfesionalesLayer } from '../components/layers/ProfesionalesLayer';
 import { GlobalesLayer } from '../components/layers/GlobalesLayer';
 import { OptimizadorLayer } from '../components/layers/OptimizadorLayer';
+import { CrearRutasLayer } from '../components/layers/CrearRutasLayer';
 import { ComunasLayer } from '../components/layers/ComunasLayer';
 
 // --- Hooks & Logic ---
@@ -34,6 +36,7 @@ import { usePacientesComunaQuery } from '../queries/usePacientesComunaQuery';
 import { useRutasVisitasQuery } from '../queries/useRutasVisitasQuery';
 import { useRutasGlobalesQuery } from '../queries/useRutasGlobalesQuery';
 import { useOptimizarRutasQuery } from '../queries/useOptimizarRutasQuery';
+import { useVisitasProgramadasQuery } from '../queries/useVisitasProgramadasQuery';
 import { useMapIcons } from '../hooks/useMapIcons';
 import { useMapaCenter } from '../hooks/useMapaCenter';
 
@@ -65,6 +68,8 @@ const MapaPage = () => {
     rutasGlobalesFilters,
     mostrarOptimizador,
     optimizadorFilters,
+    mostrarCrearRutas,
+    crearRutasFilters,
     isComparingLocalRoute,
     localOptimizedRoute,
     isRulerActive,
@@ -90,6 +95,9 @@ const MapaPage = () => {
   const { data: optimizadorData } = useOptimizarRutasQuery();
   const visitasOptimizadas = optimizadorData?.data || [];
 
+  const { data: visitasProgramadasData } = useVisitasProgramadasQuery();
+  const visitasProgramadas = visitasProgramadasData?.data || [];
+
   // --- Map Centering Logic ---
   const { center, zoom, INITIAL_POSITION } = useMapaCenter({
     pacientesPuntos,
@@ -102,7 +110,10 @@ const MapaPage = () => {
     rutasGlobalesFilters,
     mostrarOptimizador,
     optimizadorFilters,
-    selectedComunas
+    selectedComunas,
+    mostrarCrearRutas,
+    visitasProgramadas,
+    crearRutasFilters
   });
 
   return (
@@ -119,6 +130,7 @@ const MapaPage = () => {
       <MapComunasMenu />
       <MapRutasGlobalesMenu />
       <MapOptimizadorMenu />
+      <MapCrearRutasMenu />
 
       <MapContainer 
         center={INITIAL_POSITION} 
@@ -169,6 +181,8 @@ const MapaPage = () => {
           mostrarOptimizador={mostrarOptimizador}
           isRulerActive={isRulerActive}
         />
+
+        <CrearRutasLayer isRulerActive={isRulerActive} />
 
         <ComunasLayer selectedComunas={selectedComunas} isRulerActive={isRulerActive} />
 

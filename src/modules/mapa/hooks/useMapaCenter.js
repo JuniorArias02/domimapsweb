@@ -13,7 +13,10 @@ export const useMapaCenter = ({
   profesionalesFilters,
   mostrarRutasGlobales,
   rutasGlobalesFilters,
-  selectedComunas
+  selectedComunas,
+  mostrarCrearRutas,
+  visitasProgramadas,
+  crearRutasFilters
 }) => {
   const [currentCenter, setCurrentCenter] = useState(INITIAL_POSITION);
   const [currentZoom, setCurrentZoom] = useState(13);
@@ -22,6 +25,8 @@ export const useMapaCenter = ({
   const lastSelectedPacienteId = useRef(null);
   const lastGlobalKey = useRef(null);
   const lastComunaId = useRef(null);
+  const lastPersonalId = useRef(null);
+  const lastServicioId = useRef(null);
   
   const { selectedPacienteInfo } = useMapaStore();
 
@@ -81,6 +86,18 @@ export const useMapaCenter = ({
     } else if (!mostrarRutasGlobales) {
       lastGlobalKey.current = null;
     }
+
+    // 5. Crear Rutas: Centrar si cambia el personal o servicio
+    if (mostrarCrearRutas && visitasProgramadas.length > 0) {
+      const firstProgramada = visitasProgramadas.find(v => v.latitud && v.longitud);
+      if (firstProgramada && (crearRutasFilters.id_personal !== lastPersonalId.current || crearRutasFilters.id_servicio !== lastServicioId.current)) {
+        const newCenter = [parseFloat(firstProgramada.latitud), parseFloat(firstProgramada.longitud)];
+        setCurrentCenter(newCenter);
+        setCurrentZoom(14);
+        lastPersonalId.current = crearRutasFilters.id_personal;
+        lastServicioId.current = crearRutasFilters.id_servicio;
+      }
+    }
   }, [
     selectedPacienteId, 
     mostrarProfesionales, 
@@ -89,7 +106,11 @@ export const useMapaCenter = ({
     pacientesPuntos,
     mostrarRutasGlobales,
     visitasGlobal,
-    selectedComunas
+    selectedComunas,
+    mostrarCrearRutas,
+    visitasProgramadas,
+    crearRutasFilters.id_personal,
+    crearRutasFilters.id_servicio
   ]);
 
   return { center: currentCenter, zoom: currentZoom, INITIAL_POSITION };

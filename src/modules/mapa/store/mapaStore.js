@@ -10,7 +10,8 @@ export const MENU_IDS = {
   PACIENTES_COMUNA: 'PACIENTES_COMUNA',
   DETALLE_PACIENTE: 'DETALLE_PACIENTE',
   OPTIMIZADOR_GLOBAL: 'OPTIMIZADOR_GLOBAL',
-  OPTIMIZADOR: 'OPTIMIZADOR'
+  OPTIMIZADOR: 'OPTIMIZADOR',
+  CREAR_RUTAS: 'CREAR_RUTAS'
 };
 
 // --- Estados Iniciales para Reset ---
@@ -45,6 +46,13 @@ const INITIAL_OPTIMIZADOR_FILTERS = {
   id_servicio: ''
 };
 
+const INITIAL_CREAR_RUTAS_FILTERS = {
+  mes: new Date().getMonth() + 1,
+  anio: new Date().getFullYear(),
+  id_servicio: '',
+  id_personal: ''
+};
+
 /**
  * Estado de limpieza total (Capa base para toggles exclusivos)
  */
@@ -53,16 +61,19 @@ const CLEAR_STATE = {
   mostrarProfesionales: false,
   mostrarRutasGlobales: false,
   mostrarOptimizador: false,
+  mostrarCrearRutas: false,
   activeMenuId: null,
   // Reset Filtros
   pacientesFilters: INITIAL_PACIENTES_FILTERS,
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,
   rutasGlobalesFilters: INITIAL_GLOBALES_FILTERS,
   optimizadorFilters: INITIAL_OPTIMIZADOR_FILTERS,
+  crearRutasFilters: INITIAL_CREAR_RUTAS_FILTERS,
   // Reset Selecciones
   selectedPacienteId: null,
   selectedComunas: [],
   filtroComunaId: '',
+  selectedVisitasIds: [],
   // Reset Optimización Local
   isComparingLocalRoute: false,
   localOptimizedRoute: [],
@@ -203,6 +214,34 @@ export const useMapaStore = create((set, get) => ({
       optimizadorFilters: { ...state.optimizadorFilters, bloques: newBloques }
     };
   }),
+
+  // --- Lógica de Crear Rutas ---
+  mostrarCrearRutas: false,
+  toggleCrearRutasMenu: () => set((state) => {
+    const isCurrentlyActive = state.mostrarCrearRutas;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
+    return {
+      ...state,
+      ...CLEAR_STATE,
+      mostrarCrearRutas: true,
+      activeMenuId: MENU_IDS.CREAR_RUTAS
+    };
+  }),
+  crearRutasFilters: INITIAL_CREAR_RUTAS_FILTERS,
+  setCrearRutasFilters: (filters) => set((state) => ({
+    crearRutasFilters: { ...state.crearRutasFilters, ...filters }
+  })),
+  selectedVisitasIds: [],
+  toggleSelectedVisita: (id) => set((state) => {
+    const isSelected = state.selectedVisitasIds.includes(id);
+    const newSelected = isSelected
+      ? state.selectedVisitasIds.filter(vId => vId !== id)
+      : [...state.selectedVisitasIds, id];
+    return { selectedVisitasIds: newSelected };
+  }),
+  clearSelectedVisitas: () => set({ selectedVisitasIds: [] }),
+  setSelectedVisitas: (ids) => set({ selectedVisitasIds: ids }),
 
   // --- Lógica de Profesionales ---
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,

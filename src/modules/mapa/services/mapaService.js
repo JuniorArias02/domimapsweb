@@ -116,4 +116,14 @@ export const optimizarRutas = async (params = {}) => {
 export const obtenerServicios = async () => {
   const response = await api.get('/servicios');
   return response.data;
+};
+
+/**
+ * Fetch scheduled visits for route creation
+ * @param {Object} params - Query params (mes, anio, id_servicio, id_personal)
+ * @returns {Promise} Resolves to list of scheduled visits
+ */
+export const obtenerVisitasProgramadas = async (params = {}) => {
+  const response = await api.get('/mapas/visitas-programadas', { params });
+  return response.data;
 };
