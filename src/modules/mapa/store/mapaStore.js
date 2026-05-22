@@ -40,7 +40,9 @@ const INITIAL_OPTIMIZADOR_FILTERS = {
   mes: new Date().getMonth() + 1,
   anio: new Date().getFullYear(),
   tipo_filtro: 'pacientes',
-  bloques: []
+  bloques: [],
+  ver_agendados: false,
+  id_servicio: ''
 };
 
 /**

@@ -9,11 +9,13 @@ export const useOptimizarRutasQuery = () => {
   const mostrarOptimizador = useMapaStore(state => state.mostrarOptimizador);
   const filters = useMapaStore(state => state.optimizadorFilters);
 
-  // We only send mes, anio, and tipo_filtro to the API
+  // We send mes, anio, tipo_filtro, ver_agendados, and id_servicio to the API
   const apiParams = {
     mes: filters.mes,
     anio: filters.anio,
-    tipo_filtro: filters.tipo_filtro
+    tipo_filtro: filters.tipo_filtro,
+    ver_agendados: filters.ver_agendados,
+    id_servicio: filters.id_servicio
   };
 
   return useQuery({

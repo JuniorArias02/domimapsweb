@@ -107,4 +107,13 @@ export const obtenerRutasOptimizadasGlobal = async () => {
 export const optimizarRutas = async (params = {}) => {
   const response = await api.get('/mapas/optimizar', { params });
   return response.data;
+};
+
+/**
+ * Fetch all medical services
+ * @returns {Promise} Resolves to list of services
+ */
+export const obtenerServicios = async () => {
+  const response = await api.get('/servicios');
+  return response.data;
 };

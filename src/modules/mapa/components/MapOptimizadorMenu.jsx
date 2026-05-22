@@ -1,9 +1,11 @@
 import React from 'react';
 import { useMapaStore, MENU_IDS } from '../store/mapaStore';
 import { useOptimizarRutasQuery } from '../queries/useOptimizarRutasQuery';
+import { useServiciosQuery } from '../queries/useServiciosQuery';
 import { 
   X, MapPin, Power, Zap,
-  TrendingUp, Sparkles, Layers, Calendar, ChevronLeft, ChevronRight, LayoutGrid
+  TrendingUp, Sparkles, Layers, Calendar, ChevronLeft, ChevronRight, LayoutGrid,
+  ChevronDown, Activity
 } from 'lucide-react';
 
 export default function MapOptimizadorMenu() {
@@ -21,13 +23,22 @@ export default function MapOptimizadorMenu() {
   const isMenuOpen = activeMenuId === MENU_IDS.OPTIMIZADOR;
 
   const { data: routesResult, isLoading, isError } = useOptimizarRutasQuery();
+  const { data: serviciosData, isLoading: isLoadingServicios } = useServiciosQuery();
   
   const visits = routesResult?.data || [];
+  const servicios = serviciosData?.data || serviciosData || [];
 
-  // Extraer bloques únicos de los datos para el selector
+  
   const availableBlocks = [...new Set(visits.map(v => v.bloque_ruta))].sort((a, b) => parseInt(a) - parseInt(b));
 
   if (!isMenuOpen) return null;
+
+  const currentDate = new Date();
+  const currentMes = currentDate.getMonth() + 1;
+  const currentAnio = currentDate.getFullYear();
+
+  const isPastDisabled = optimizadorFilters.anio < currentAnio || 
+    (optimizadorFilters.anio === currentAnio && optimizadorFilters.mes <= currentMes);
 
   const handleMesChange = (increment) => {
     let newMes = optimizadorFilters.mes + increment;
@@ -39,6 +50,10 @@ export default function MapOptimizadorMenu() {
     } else if (newMes < 1) {
       newMes = 12;
       newAnio--;
+    }
+
+    if (newAnio < currentAnio || (newAnio === currentAnio && newMes < currentMes)) {
+      return;
     }
 
     setOptimizadorFilters({ mes: newMes, anio: newAnio });
@@ -82,7 +97,12 @@ export default function MapOptimizadorMenu() {
         <div className="flex items-center justify-between bg-gray-50 p-2 rounded-2xl border border-gray-100">
            <button 
             onClick={() => handleMesChange(-1)}
-            className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-400 hover:text-amber-500"
+            disabled={isPastDisabled}
+            className={`p-2 rounded-xl transition-all ${
+              isPastDisabled 
+                ? 'opacity-40 cursor-not-allowed text-gray-300' 
+                : 'hover:bg-white hover:shadow-sm text-gray-400 hover:text-amber-500'
+            }`}
            >
              <ChevronLeft size={20} />
            </button>
@@ -123,6 +143,54 @@ export default function MapOptimizadorMenu() {
               Profesional
             </button>
         </div>
+
+        {/* Selector de Servicio */}
+        <div className="relative">
+          <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-1">Servicio Médico</label>
+          <div className="relative group">
+            <select
+              name="id_servicio"
+              value={optimizadorFilters.id_servicio || ''}
+              onChange={(e) => setOptimizadorFilters({ id_servicio: e.target.value })}
+              className="w-full text-[12px] font-black p-3.5 pl-11 pr-10 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/5 focus:bg-white focus:border-amber-500 transition-all text-gray-700 appearance-none cursor-pointer hover:border-gray-200"
+            >
+              <option value="">Todos los Servicios</option>
+              {servicios.map((serv) => (
+                <option key={serv.id_servicio} value={serv.id_servicio}>
+                  {serv.codigo_servicio} - {serv.nombre_servicio}
+                </option>
+              ))}
+            </select>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 group-focus-within:scale-110 transition-transform">
+              <Activity size={18} />
+            </div>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none">
+              <ChevronDown size={18} />
+            </div>
+            {isLoadingServicios && (
+              <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                <div className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Ver Agendados Switch */}
+        <label className="flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/70 rounded-2xl border border-gray-100 cursor-pointer transition-all duration-200 group">
+          <div className="flex flex-col">
+            <span className="text-[11px] font-black text-gray-800 uppercase tracking-wide">Ver Agendados</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">Optimizar solo visitas programadas</span>
+          </div>
+          <div className="relative inline-flex items-center">
+            <input 
+              type="checkbox" 
+              checked={optimizadorFilters.ver_agendados || false}
+              onChange={(e) => setOptimizadorFilters({ ver_agendados: e.target.checked })}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+          </div>
+        </label>
 
         {/* Mode Toggle Button */}
         <button
