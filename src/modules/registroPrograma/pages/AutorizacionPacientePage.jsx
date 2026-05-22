@@ -41,7 +41,6 @@ export default function AutorizacionPacientePage() {
   // Queries & Mutations
   const { data: pacienteData, isLoading: isLoadingPaciente } = usePacienteDetalleQuery(id);
   const { data: autorizacionesData, isLoading: isLoadingAutorizaciones, isError, isFetching } = useAutorizacionesPacienteQuery(id);
-  console.log("autorizaciones", autorizacionesData);
   const crearMutation = useCrearAutorizacionPacienteMutation(id);
 
   const manejarGuardarAutorizacion = async (datos) => {
@@ -79,7 +78,6 @@ export default function AutorizacionPacientePage() {
 
   const paciente = pacienteDesdeState || pacienteData?.data || pacienteData || null;
   const autorizaciones = autorizacionesData?.data || [];
-console.log("autorizaciones", autorizaciones);
   const mostrarCargandoPaciente = !paciente && isLoadingPaciente;
   const nombreAseguradora = paciente?.aseguradora?.nombre || paciente?.nombre_aseguradora;
 

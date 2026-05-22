@@ -35,7 +35,6 @@ export default function AgendamientoListPage() {
   // Query
   const { data, isLoading, isError, isFetching } = useAgendasQuery(params);
   const agendas = data?.data || [];
-  console.log(agendas);
   const meta = data?.meta || { current_page: 1, last_page: 1 };
 
   const handleSearchChange = (e) => {

@@ -250,7 +250,6 @@ export default function RegistroAutorizacionModal({
       }))
     };
 
-    console.log("PAYLOAD_ENVIAR:", payload);
     onGuardar(payload);
   };
 
