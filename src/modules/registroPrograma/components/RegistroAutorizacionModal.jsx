@@ -28,6 +28,40 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
+const parseFechaInicio = (fechaStr) => {
+  if (!fechaStr) return { date: '', hour: '12', minute: '00', period: 'AM' };
+  
+  const [date, time] = fechaStr.split('T');
+  if (!time) return { date: date || '', hour: '12', minute: '00', period: 'AM' };
+  
+  const [h24, min] = time.split(':');
+  let h24Num = parseInt(h24, 10);
+  if (isNaN(h24Num)) h24Num = 12;
+  
+  const period = h24Num >= 12 ? 'PM' : 'AM';
+  let h12 = h24Num % 12;
+  if (h12 === 0) h12 = 12;
+  
+  return {
+    date: date || '',
+    hour: String(h12),
+    minute: min || '00',
+    period
+  };
+};
+
+const buildFechaInicio = (date, hour, minute, period) => {
+  if (!date) return '';
+  
+  let h24 = parseInt(hour, 10);
+  if (period === 'PM' && h24 < 12) h24 += 12;
+  if (period === 'AM' && h24 === 12) h24 = 0;
+  
+  const h24Str = String(h24).padStart(2, '0');
+  const minStr = String(minute).padStart(2, '0');
+  
+  return `${date}T${h24Str}:${minStr}`;
+};
 
 const SERVICIO_INICIAL = () => ({
   id_servicio: '',
@@ -81,6 +115,19 @@ export default function RegistroAutorizacionModal({
 
   const manejarCambioServicio = (index, e) => {
     const { name, value } = e.target;
+    setServicios(prev => prev.map((s, i) => i === index ? { ...s, [name]: value } : s));
+    
+    // Limpiar error específico
+    setErroresServicios(prev => {
+      const nuevos = [...prev];
+      if (nuevos[index] && nuevos[index][name]) {
+        nuevos[index] = { ...nuevos[index], [name]: '' };
+      }
+      return nuevos;
+    });
+  };
+
+  const manejarCambioServicioDirecto = (index, name, value) => {
     setServicios(prev => prev.map((s, i) => i === index ? { ...s, [name]: value } : s));
     
     // Limpiar error específico
@@ -425,19 +472,69 @@ export default function RegistroAutorizacionModal({
                     {/* Fecha Inicio */}
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Fecha de Inicio</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Calendar size={18} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {/* Selector de Fecha */}
+                        <div className="relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <Calendar size={18} />
+                          </div>
+                          <input
+                            type="date"
+                            value={parseFechaInicio(srv.fecha_inicio).date}
+                            onChange={(e) => {
+                              const { hour, minute, period } = parseFechaInicio(srv.fecha_inicio);
+                              const nuevaFecha = buildFechaInicio(e.target.value, hour, minute, period);
+                              manejarCambioServicioDirecto(idx, 'fecha_inicio', nuevaFecha);
+                            }}
+                            className={`w-full pl-11 pr-4 py-3 text-sm font-bold bg-white border rounded-2xl focus:outline-none focus:ring-4 transition-all ${
+                              erroresServicios[idx]?.fecha_inicio ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'
+                            }`}
+                          />
                         </div>
-                        <input
-                          type="datetime-local"
-                          name="fecha_inicio"
-                          value={srv.fecha_inicio}
-                          onChange={(e) => manejarCambioServicio(idx, e)}
-                          className={`w-full pl-11 pr-4 py-3 text-sm font-bold bg-white border rounded-2xl focus:outline-none focus:ring-4 transition-all ${
-                            erroresServicios[idx]?.fecha_inicio ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'
-                          }`}
-                        />
+
+                        {/* Selector de Hora 12h */}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-100 rounded-2xl focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
+                          <Clock size={16} className="text-gray-400 mr-1 flex-shrink-0" />
+                          <select
+                            value={parseFechaInicio(srv.fecha_inicio).hour}
+                            onChange={(e) => {
+                              const { date, minute, period } = parseFechaInicio(srv.fecha_inicio);
+                              const nuevaFecha = buildFechaInicio(date, e.target.value, minute, period);
+                              manejarCambioServicioDirecto(idx, 'fecha_inicio', nuevaFecha);
+                            }}
+                            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer py-1"
+                          >
+                            {Array.from({ length: 12 }, (_, i) => String(i + 1)).map(h => (
+                              <option key={h} value={h}>{h.padStart(2, '0')}</option>
+                            ))}
+                          </select>
+                          <span className="text-gray-400 font-bold">:</span>
+                          <select
+                            value={parseFechaInicio(srv.fecha_inicio).minute}
+                            onChange={(e) => {
+                              const { date, hour, period } = parseFechaInicio(srv.fecha_inicio);
+                              const nuevaFecha = buildFechaInicio(date, hour, e.target.value, period);
+                              manejarCambioServicioDirecto(idx, 'fecha_inicio', nuevaFecha);
+                            }}
+                            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer py-1"
+                          >
+                            {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={parseFechaInicio(srv.fecha_inicio).period}
+                            onChange={(e) => {
+                              const { date, hour, minute } = parseFechaInicio(srv.fecha_inicio);
+                              const nuevaFecha = buildFechaInicio(date, hour, minute, e.target.value);
+                              manejarCambioServicioDirecto(idx, 'fecha_inicio', nuevaFecha);
+                            }}
+                            className="bg-transparent text-sm font-black text-blue-600 outline-none cursor-pointer py-1 ml-auto"
+                          >
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                          </select>
+                        </div>
                       </div>
                       {erroresServicios[idx]?.fecha_inicio && <span className="text-[10px] font-bold text-red-500 ml-1 italic">{erroresServicios[idx].fecha_inicio}</span>}
                     </div>

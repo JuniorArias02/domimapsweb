@@ -92,39 +92,7 @@ export const CrearRutasLayer = ({ isRulerActive }) => {
                 toggleSelectedVisita(v.id_visita);
               }
             }}
-          >
-            <Popup>
-              <div className="bg-indigo-600 text-white px-3 py-1.5 -mt-4 -mx-4 mb-2 rounded-t-lg font-black text-[10px] uppercase flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Route size={12} /> Visita Programada
-                </div>
-                {isSelected && (
-                  <div className="bg-white/20 px-2 py-0.5 rounded text-[8px]">
-                    Orden: #{displayIndex}
-                  </div>
-                )}
-              </div>
-              
-              <div className="font-black text-sm text-[#111827] uppercase leading-tight mb-1">
-                {v.paciente}
-              </div>
-              
-              <div className="text-[10px] text-gray-400 mt-2 leading-[1.2] flex items-start gap-1">
-                <MapPin size={10} className="flex-shrink-0 mt-0.5" />
-                <span>{v.direccion}</span>
-              </div>
-
-              <div className="text-[10px] text-gray-400 mt-1 leading-[1.2] flex items-start gap-1">
-                <Activity size={10} className="flex-shrink-0 mt-0.5" />
-                <span>{v.codigo_servicio} - {v.nombre_servicio}</span>
-              </div>
-
-              <div className="text-[10px] text-gray-600 font-bold mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
-                <span>Prof: {v.nombre_profesional || 'Sin asignar'}</span>
-                <span>{v.fecha_programada}</span>
-              </div>
-            </Popup>
-          </Marker>
+          />
         );
       })}
     </>

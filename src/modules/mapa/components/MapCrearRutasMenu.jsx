@@ -24,6 +24,36 @@ export default function MapCrearRutasMenu() {
     setSelectedVisitas
   } = useMapaStore();
 
+  const formatFecha = (fechaStr) => {
+    if (!fechaStr) return 'No registrada';
+    try {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+        const [year, month, day] = fechaStr.split('-');
+        return `${day}/${month}/${year}`;
+      }
+
+      const date = new Date(fechaStr.replace(' ', 'T'));
+      if (isNaN(date.getTime())) return fechaStr;
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      if (fechaStr.includes(' ') || fechaStr.includes('T')) {
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        const hoursStr = String(hours).padStart(2, '0');
+        return `${day}/${month}/${year} ${hoursStr}:${minutes} ${period}`;
+      }
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return fechaStr;
+    }
+  };
+
   const isMenuOpen = activeMenuId === MENU_IDS.CREAR_RUTAS;
  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -361,7 +391,7 @@ export default function MapCrearRutasMenu() {
                         Prof: <span className="text-gray-700 font-bold">{visita.nombre_profesional || 'Sin asignar'}</span>
                       </span>
                       <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase bg-indigo-50 text-indigo-600 border border-indigo-100">
-                        {visita.fecha_programada}
+                        {formatFecha(visita.fecha_programada)}
                       </span>
                     </div>
                   </div>
