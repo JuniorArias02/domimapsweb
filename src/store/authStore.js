@@ -15,22 +15,53 @@ const isTokenExpired = (token) => {
 const savedToken = localStorage.getItem('token');
 const isInitialAuthenticated = savedToken && !isTokenExpired(savedToken);
 
+let savedUser = null;
+if (isInitialAuthenticated) {
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      savedUser = JSON.parse(userStr);
+    } else if (savedToken) {
+      // Auto-recuperación de datos desde el token JWT decodificado
+      const decoded = jwtDecode(savedToken);
+      savedUser = {
+        id_usuario: decoded.id_usuario || decoded.sub,
+        nombre_completo: decoded.nombre_completo || 'Usuario',
+        email: decoded.email,
+        rol: {
+          id_rol: decoded.id_rol,
+          nombre: decoded.id_rol === 2 ? 'ADMINISTRADOR' : 'COLABORADOR'
+        }
+      };
+      // Guardamos en localStorage para evitar decodificar en el futuro
+      localStorage.setItem('user', JSON.stringify(savedUser));
+    }
+  } catch (error) {
+    console.error('Error parsing user from localStorage or JWT token:', error);
+  }
+}
+
 const useAuthStore = create((set) => ({
-  user: null,
+  user: savedUser,
   token: savedToken || null,
   isAuthenticated: !!isInitialAuthenticated,
   
   setAuth: (user, token) => {
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
     set({ user, token, isAuthenticated: true });
   },
   
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     set({ user: null, token: null, isAuthenticated: false });
   },
   
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
+  },
 
   checkTokenExpiration: () => {
     const { token } = useAuthStore.getState();

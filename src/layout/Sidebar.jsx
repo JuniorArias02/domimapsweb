@@ -1,7 +1,6 @@
 import React from 'react';
-import { Heart, LogOut } from 'lucide-react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
+import { Heart } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import useUIStore from '../store/uiStore';
 import { itemsNavegacion, itemsNavegacionSecundaria } from '../constants/navegacion';
 
@@ -24,14 +23,7 @@ function ItemNavegacion({ icono: Icono, etiqueta, ruta }) {
 }
 
 export default function Sidebar() {
-  const { logout, user } = useAuthStore();
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
-  const navigate = useNavigate();
-
-  const cerrarSesion = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <aside 
@@ -59,28 +51,6 @@ export default function Sidebar() {
             ))}
           </div>
         </nav>
-      </div>
-
-      {/* Usuario */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50/50">
-        <div className="flex items-center gap-3 p-2">
-          <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white font-bold text-sm">
-            {user?.nombre_completo?.charAt(0) || 'A'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate capitalize">
-              {user?.nombre_completo?.toLowerCase() || 'Administrador'}
-            </p>
-            <p className="text-xs text-gray-500 truncate">{user?.rol?.nombre || 'ROL'}</p>
-          </div>
-        </div>
-        <button
-          onClick={cerrarSesion}
-          className="w-full mt-4 flex items-center gap-2 p-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-        >
-          <LogOut size={18} />
-          Cerrar sesión
-        </button>
       </div>
     </aside>
   );

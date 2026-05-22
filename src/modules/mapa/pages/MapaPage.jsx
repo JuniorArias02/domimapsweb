@@ -18,6 +18,7 @@ import MapRutasGlobalesMenu from '../components/MapRutasGlobalesMenu';
 import MapOptimizadorMenu from '../components/MapOptimizadorMenu';
 import MapCrearRutasMenu from '../components/MapCrearRutasMenu';
 import MapSearchBox from '../components/MapSearchBox';
+import MapUserMenu from '../components/MapUserMenu';
 import MapRuler from '../components/MapRuler';
 import MapToolbox from '../components/MapToolbox';
 import { MapChangeView } from '../components/MapChangeView';
@@ -121,6 +122,9 @@ const MapaPage = () => {
       
       {/* Buscador Superior del Mapa */}
       <MapSearchBox />
+
+      {/* Menú de Usuario Flotante (Google Maps style) */}
+      <MapUserMenu />
 
       {/* Componentes Modulares de Sidebars */}
       <MapSidebar />

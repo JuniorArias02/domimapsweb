@@ -54,5 +54,15 @@ export const registroProgramaService = {
     if (!autorizacion) return { en_uso: false };
     const response = await api.get('ingresos/verificar-autorizacion', { params: { autorizacion } });
     return response.data;
+  },
+
+  /**
+   * Completar una visita domiciliaria
+   * @param {number|string} idVisita - ID de la visita a completar
+   * @returns {Promise<Object>} Resultado de la actualización
+   */
+  completarVisita: async (idVisita) => {
+    const response = await api.patch(`visitas-domiciliarias/${idVisita}/completar`);
+    return response.data;
   }
 };

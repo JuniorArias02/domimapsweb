@@ -37,7 +37,6 @@ const SERVICIO_INICIAL = () => ({
   numero_sesiones: 1,
   frecuencia_dias: 1,
   fecha_inicio: new Date().toISOString().slice(0, 16),
-  fecha_programada: new Date().toISOString().slice(0, 16)
 });
 
 export default function RegistroAutorizacionModal({ 
@@ -177,10 +176,7 @@ export default function RegistroAutorizacionModal({
         err.fecha_inicio = 'Campo obligatorio';
         tieneErrores = true;
       }
-      if (!s.fecha_programada) {
-        err.fecha_programada = 'Campo obligatorio';
-        tieneErrores = true;
-      }
+     
       return err;
     });
 
@@ -204,7 +200,6 @@ export default function RegistroAutorizacionModal({
         numero_sesiones: parseInt(s.numero_sesiones, 10),
         frecuencia_dias: parseInt(s.frecuencia_dias, 10),
         fecha_inicio: s.fecha_inicio.replace('T', ' '),
-        fecha_programada: s.fecha_programada.replace('T', ' ')
       }))
     };
 
@@ -447,25 +442,6 @@ export default function RegistroAutorizacionModal({
                       {erroresServicios[idx]?.fecha_inicio && <span className="text-[10px] font-bold text-red-500 ml-1 italic">{erroresServicios[idx].fecha_inicio}</span>}
                     </div>
 
-                    {/* Fecha Programada */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Fecha Programada (Primera Visita)</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Calendar size={18} />
-                        </div>
-                        <input
-                          type="datetime-local"
-                          name="fecha_programada"
-                          value={srv.fecha_programada}
-                          onChange={(e) => manejarCambioServicio(idx, e)}
-                          className={`w-full pl-11 pr-4 py-3 text-sm font-bold bg-white border rounded-2xl focus:outline-none focus:ring-4 transition-all ${
-                            erroresServicios[idx]?.fecha_programada ? 'border-red-500 focus:ring-red-100' : 'border-gray-100 focus:border-blue-500 focus:ring-blue-500/10'
-                          }`}
-                        />
-                      </div>
-                      {erroresServicios[idx]?.fecha_programada && <span className="text-[10px] font-bold text-red-500 ml-1 italic">{erroresServicios[idx].fecha_programada}</span>}
-                    </div>
                   </div>
 
                 </div>

@@ -12,11 +12,13 @@ import {
   CalendarCheck,
   Check
 } from 'lucide-react';
-import { useOrdenMedicaQuery } from '../queries/useOrdenMedicaQuery';
+import { useOrdenMedicaQuery, useCompletarVisitaMutation } from '../queries/useOrdenMedicaQuery';
+import Swal from 'sweetalert2';
 
 export default function OrdenMedicaModal({ abierto, onCerrar, idIngreso }) {
   // Query to fetch medical orders for the admission
   const { data: respuesta, isLoading, isError } = useOrdenMedicaQuery(idIngreso);
+  const completarMutation = useCompletarVisitaMutation(idIngreso);
   
   const ordenes = Array.isArray(respuesta) ? respuesta : (respuesta?.data || []);
 
@@ -37,6 +39,69 @@ export default function OrdenMedicaModal({ abierto, onCerrar, idIngreso }) {
     } catch (e) {
       return fechaStr;
     }
+  };
+
+  const handleCompletarVisita = (visita) => {
+    if (visita.estado === 'COMPLETADA') return;
+    if (visita.estado === 'CANCELADA') {
+      Swal.fire({
+        title: 'Visita Cancelada',
+        text: 'No se puede completar una visita que ha sido cancelada.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        customClass: {
+          popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+          confirmButton: 'bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        },
+        buttonsStyling: false
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Completar visita?',
+      text: `¿Estás seguro de que deseas marcar la visita programada para el día ${formatFecha(visita.fecha_programada)} como COMPLETADA?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, completar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+        confirmButton: 'bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer mr-3',
+        cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-750 px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer'
+      },
+      buttonsStyling: false
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await completarMutation.mutateAsync(visita.id_visita);
+          Swal.fire({
+            title: '¡Visita Completada!',
+            text: 'La visita se ha actualizado a COMPLETADA de forma exitosa.',
+            icon: 'success',
+            confirmButtonText: 'Genial',
+            customClass: {
+              popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+              confirmButton: 'bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+            },
+            buttonsStyling: false
+          });
+        } catch (error) {
+          console.error('Error al completar visita:', error);
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: error?.response?.data?.message || 'Ocurrió un error al intentar completar la visita.',
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            customClass: {
+              popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+              confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+            },
+            buttonsStyling: false
+          });
+        }
+      }
+    });
   };
 
   const getVisitaBadgeStyles = (estado) => {
@@ -192,29 +257,41 @@ export default function OrdenMedicaModal({ abierto, onCerrar, idIngreso }) {
                                 Historial de Visitas / Agendas ({srv.visitas.length})
                               </span>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {srv.visitas.map((visita) => (
-                                  <div 
-                                    key={visita.id_visita} 
-                                    className="bg-white p-3.5 rounded-xl border border-gray-100/80 flex items-center justify-between gap-3 shadow-xs hover:border-gray-200 transition-colors"
-                                  >
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-2">
-                                        <CalendarCheck size={14} className="text-gray-400" />
-                                        <span className="text-xs font-bold text-gray-700">
-                                          {formatFecha(visita.fecha_programada)}
-                                        </span>
+                                {srv.visitas.map((visita) => {
+                                  const isCompletada = visita.estado === 'COMPLETADA';
+                                  const isCancelada = visita.estado === 'CANCELADA';
+                                  const isClickable = !isCompletada && !isCancelada;
+
+                                  return (
+                                    <div 
+                                      key={visita.id_visita} 
+                                      onClick={() => isClickable && handleCompletarVisita(visita)}
+                                      className={`bg-white p-3.5 rounded-xl border border-gray-100/80 flex items-center justify-between gap-3 shadow-xs transition-all ${
+                                        isClickable 
+                                          ? 'cursor-pointer hover:border-blue-300 hover:bg-blue-50/10 active:scale-[0.98]' 
+                                          : 'cursor-default'
+                                      }`}
+                                      title={isClickable ? 'Haga clic para completar esta visita' : undefined}
+                                    >
+                                      <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                          <CalendarCheck size={14} className="text-gray-400" />
+                                          <span className="text-xs font-bold text-gray-700">
+                                            {formatFecha(visita.fecha_programada)}
+                                          </span>
+                                        </div>
+                                        {visita.fecha_realizada && (
+                                          <span className="text-[10px] font-medium text-emerald-600 flex items-center gap-1 bg-emerald-50/50 px-1.5 py-0.5 rounded w-fit">
+                                            <Check size={10} /> Realizada: {formatFecha(visita.fecha_realizada)}
+                                          </span>
+                                        )}
                                       </div>
-                                      {visita.fecha_realizada && (
-                                        <span className="text-[10px] font-medium text-emerald-600 flex items-center gap-1 bg-emerald-50/50 px-1.5 py-0.5 rounded w-fit">
-                                          <Check size={10} /> Realizada: {formatFecha(visita.fecha_realizada)}
-                                        </span>
-                                      )}
+                                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${getVisitaBadgeStyles(visita.estado)}`}>
+                                        {visita.estado}
+                                      </span>
                                     </div>
-                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${getVisitaBadgeStyles(visita.estado)}`}>
-                                      {visita.estado}
-                                    </span>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
