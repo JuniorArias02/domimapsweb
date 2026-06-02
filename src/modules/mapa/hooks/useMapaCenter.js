@@ -5,18 +5,18 @@ import { useMapaStore } from '../store/mapaStore';
 const INITIAL_POSITION = [7.886053739251232, -72.497568179007];
 
 export const useMapaCenter = ({
-  pacientesPuntos,
-  visitas,
-  visitasGlobal,
+  pacientesPuntos = [],
+  visitas = [],
+  visitasGlobal = [],
   selectedPacienteId,
   mostrarProfesionales,
-  profesionalesFilters,
+  profesionalesFilters = {},
   mostrarRutasGlobales,
-  rutasGlobalesFilters,
-  selectedComunas,
+  rutasGlobalesFilters = {},
+  selectedComunas = [],
   mostrarCrearRutas,
-  visitasProgramadas,
-  crearRutasFilters,
+  visitasProgramadas = [],
+  crearRutasFilters = {},
   mostrarVerRutas,
   selectedRutaId,
   routeVisitas = []
@@ -84,11 +84,11 @@ export const useMapaCenter = ({
     // 3. Profesionales: Solo centrar si cambia el id_profesional o es la primera carga con datos
     if (mostrarProfesionales && visitas.length > 0) {
       const firstVisit = visitas.find(v => v.latitud && v.longitud);
-      if (firstVisit && profesionalesFilters.id_profesional !== lastProfesionalId.current) {
+      if (firstVisit && profesionalesFilters?.id_profesional !== lastProfesionalId.current) {
         const newCenter = [parseFloat(firstVisit.latitud), parseFloat(firstVisit.longitud)];
         setCurrentCenter(newCenter);
         setCurrentZoom(14);
-        lastProfesionalId.current = profesionalesFilters.id_profesional;
+        lastProfesionalId.current = profesionalesFilters?.id_profesional;
       }
     }
 
@@ -108,18 +108,18 @@ export const useMapaCenter = ({
     // 5. Crear Rutas: Centrar si cambia el personal o servicio
     if (mostrarCrearRutas && visitasProgramadas.length > 0) {
       const firstProgramada = visitasProgramadas.find(v => v.latitud && v.longitud);
-      if (firstProgramada && (crearRutasFilters.id_personal !== lastPersonalId.current || crearRutasFilters.id_servicio !== lastServicioId.current)) {
+      if (firstProgramada && (crearRutasFilters?.id_personal !== lastPersonalId.current || crearRutasFilters?.id_servicio !== lastServicioId.current)) {
         const newCenter = [parseFloat(firstProgramada.latitud), parseFloat(firstProgramada.longitud)];
         setCurrentCenter(newCenter);
         setCurrentZoom(14);
-        lastPersonalId.current = crearRutasFilters.id_personal;
-        lastServicioId.current = crearRutasFilters.id_servicio;
+        lastPersonalId.current = crearRutasFilters?.id_personal;
+        lastServicioId.current = crearRutasFilters?.id_servicio;
       }
     }
   }, [
     selectedPacienteId, 
     mostrarProfesionales, 
-    profesionalesFilters.id_profesional, 
+    profesionalesFilters?.id_profesional, 
     visitas, 
     pacientesPuntos,
     mostrarRutasGlobales,
@@ -127,8 +127,8 @@ export const useMapaCenter = ({
     selectedComunas,
     mostrarCrearRutas,
     visitasProgramadas,
-    crearRutasFilters.id_personal,
-    crearRutasFilters.id_servicio,
+    crearRutasFilters?.id_personal,
+    crearRutasFilters?.id_servicio,
     mostrarVerRutas,
     selectedRutaId,
     routeVisitas
