@@ -1,4 +1,4 @@
-import { Users, BriefcaseMedical, Globe, Zap, Route } from 'lucide-react';
+import { Users, BriefcaseMedical, Globe, Zap, Route, Map } from 'lucide-react';
 
 export const itemsMenuSidebar = [
   {
@@ -45,6 +45,15 @@ export const itemsMenuSidebar = [
     colorKey: 'indigo',
     storeKeyActivo: 'mostrarCrearRutas',
     storeKeyToggle: 'toggleCrearRutasMenu'
+  },
+  {
+    id: 'verRutas',
+    etiqueta: 'Ver Rutas',
+    descripcion: 'Listar rutas creadas',
+    icono: Map,
+    colorKey: 'indigo',
+    storeKeyActivo: 'mostrarVerRutas',
+    storeKeyToggle: 'toggleVerRutasMenu'
   }
 ];
 

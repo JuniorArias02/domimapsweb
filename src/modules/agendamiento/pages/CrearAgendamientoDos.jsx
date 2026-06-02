@@ -1,188 +1,199 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Search, User, Stethoscope, 
   Calendar, Save, ClipboardList, Info, 
-  UserCheck, Hash, ShieldCheck
+  UserCheck, Hash, ShieldCheck, Activity, AlertCircle, CheckCircle2, Clock
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
-const MOCK_INGRESOS = [
-  { id_ingreso: 1, ingreso: 1001, id_paciente: 440, nombre_paciente: "ELOISA FONSECA SANDOVAL", identificacion: "37551393", autorizacion: "T37551393042026" },
-  { id_ingreso: 2, ingreso: 1002, id_paciente: 441, nombre_paciente: "JUAN PEREZ", identificacion: "12345678", autorizacion: "AUTH999888" },
-  { id_ingreso: 3, ingreso: 1003, id_paciente: 442, nombre_paciente: "MARIA RODRIGUEZ", identificacion: "87654321", autorizacion: "AUTH111222" },
-  { id_ingreso: 4, ingreso: 1004, id_paciente: 441, nombre_paciente: "JUAN PEREZ (Nuevo Ingreso)", identificacion: "12345678", autorizacion: "AUTH-JP-2026" },
-];
-
-const MOCK_SERVICIOS_INGRESO = [
-  { id_orden_servicio: 1800, id_ingreso: 1, id_servicio: 1, nombre_servicio: "ATENCION [VISITA] DOMICILIARIA, POR MEDICINA GENERAL", cantidad: 1, frecuencia: 60, estado: "ACTIVO" },
-  { id_orden_servicio: 1801, id_ingreso: 1, id_servicio: 2, nombre_servicio: "TERAPIA FISICA DOMICILIARIA", cantidad: 30, frecuencia: 1, estado: "ACTIVO" },
-  { id_orden_servicio: 1802, id_ingreso: 2, id_servicio: 1, nombre_servicio: "ATENCION [VISITA] DOMICILIARIA, POR MEDICINA GENERAL", cantidad: 1, frecuencia: 30, estado: "ACTIVO" },
-  { id_orden_servicio: 1803, id_ingreso: 4, id_servicio: 3, nombre_servicio: "FONOAUDIOLOGIA DOMICILIARIA", cantidad: 3, frecuencia: 2, estado: "ACTIVO" },
-];
-
-const MOCK_PERSONAL = [
-  { id_personal: 1, nombre_completo: "MORENO HERNANDEZ MARIA ROSSANA", especialidad: "Medicina General" },
-  { id_personal: 2, nombre_completo: "PEDRO ARMANDO DIAZ", especialidad: "Terapista" },
-  { id_personal: 3, nombre_completo: "LUISA FERNANDA GOMEZ", especialidad: "Enfermería" },
-];
+import { usePendientesPorAutorizacionQuery, useProgramarVisitaMutation } from '../queries/useAgendasQuery';
+import { usePersonalBusqueda } from '../queries/useBusquedaQueries';
+import AsyncSearchSelect from '../components/AsyncSearchSelect';
 
 const CrearAgendamientoDos = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const autorizacionInicial = location.state?.autorizacion || '';
 
   // Form State
-  const [ingresoBusqueda, setIngresoBusqueda] = useState('');
-  const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
+  const [autorizacionBusqueda, setAutorizacionBusqueda] = useState(autorizacionInicial);
+  const [autorizacionBuscada, setAutorizacionBuscada] = useState(autorizacionInicial);
+  
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
-  const [idPersonal, setIdPersonal] = useState('');
+  const [profesional, setProfesional] = useState(null);
   const [fechaProgramada, setFechaProgramada] = useState('');
   const [observaciones, setObservaciones] = useState('');
 
-  // UI State
-  const [filteredIngresos, setFilteredIngresos] = useState([]);
-  const [disponibleServicios, setDisponibleServicios] = useState([]);
+  // Queries
+  const { data: serviciosData, isLoading: isLoadingServicios, isError: isErrorServicios, error } = usePendientesPorAutorizacionQuery(autorizacionBuscada);
+  const programarMutation = useProgramarVisitaMutation();
+  
+  const serviciosPendientes = serviciosData || [];
 
-  // Filter ingresos on search
-  useEffect(() => {
-    if (ingresoBusqueda.length > 1) {
-      const filtered = MOCK_INGRESOS.filter(i => 
-        i.ingreso.toString().includes(ingresoBusqueda) || 
-        i.nombre_paciente.toLowerCase().includes(ingresoBusqueda.toLowerCase()) ||
-        i.identificacion.includes(ingresoBusqueda)
-      );
-      setFilteredIngresos(filtered);
+  const handleVolver = () => {
+    if (location.state?.autorizacion) {
+      navigate(-1);
     } else {
-      setFilteredIngresos([]);
+      navigate('/agendamiento');
     }
-  }, [ingresoBusqueda]);
-
-  // Load services when ingreso is selected
-  useEffect(() => {
-    if (ingresoSeleccionado) {
-      const services = MOCK_SERVICIOS_INGRESO.filter(s => s.id_ingreso === ingresoSeleccionado.id_ingreso);
-      setDisponibleServicios(services);
-      setServicioSeleccionado(null);
-    } else {
-      setDisponibleServicios([]);
-      setServicioSeleccionado(null);
-    }
-  }, [ingresoSeleccionado]);
-
-  const handleSelectIngreso = (ingreso) => {
-    setIngresoSeleccionado(ingreso);
-    setIngresoBusqueda('');
-    setFilteredIngresos([]);
   };
 
-  const handleGuardar = () => {
+  const handleBuscarAutorizacion = (e) => {
+    e.preventDefault();
+    if (autorizacionBusqueda.trim().length >= 3) {
+      setAutorizacionBuscada(autorizacionBusqueda.trim());
+      setServicioSeleccionado(null);
+    }
+  };
+
+  const handleGuardar = async () => {
+    if (!servicioSeleccionado || !profesional || !fechaProgramada) return;
+
+    // Obtenemos el id_paciente del state (pasado desde la tabla) 
+    // Si no está, intentamos extraerlo del servicio (por si el backend lo llegara a mandar)
+    const idPaciente = location.state?.id_paciente || servicioSeleccionado.id_paciente;
+
+    if (!idPaciente) {
+      Swal.fire('Error', 'No se ha podido identificar el ID del paciente para esta visita. Intente acceder desde la ficha del paciente.', 'error');
+      return;
+    }
+
     const payload = {
-      codigo_ingreso: ingresoSeleccionado?.ingreso,
-      id_orden_servicio: servicioSeleccionado?.id_orden_servicio,
-      id_paciente: ingresoSeleccionado?.id_paciente,
-      id_personal: parseInt(idPersonal),
-      fecha_programada: fechaProgramada,
-      observaciones: observaciones,
-      estado: 'PROGRAMADA'
+      id_orden_servicio: servicioSeleccionado.id_orden_servicio,
+      id_paciente: idPaciente,
+      id_personal: profesional.id_personal,
+      fecha_programada: fechaProgramada.replace('T', ' ') + ':00',
+      estado: 'PROGRAMADA',
+      observaciones: observaciones
     };
 
-    alert("Agendamiento (Método 2 - Kubapp) guardado con éxito. Revisa la consola.");
-    navigate('/agendamiento');
+    try {
+      await programarMutation.mutateAsync(payload);
+      Swal.fire({
+        title: '¡Visita Programada!',
+        text: 'La visita se ha agendado exitosamente.',
+        icon: 'success',
+        confirmButtonText: 'Entendido',
+        customClass: {
+          popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+          confirmButton: 'bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        },
+        buttonsStyling: false
+      });
+      handleVolver();
+    } catch (err) {
+      console.error('Error al programar:', err);
+      Swal.fire({
+        title: 'Error al agendar',
+        text: err?.response?.data?.error || 'Ocurrió un error al intentar programar la visita.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        customClass: {
+          popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+          confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        },
+        buttonsStyling: false
+      });
+    }
   };
+
+  const renderPersonalOption = (item) => (
+    <div>
+      <p className="text-sm font-black text-gray-900 group-hover:text-[#2563EB]">{item.nombre_completo}</p>
+      <p className="text-[10px] font-bold text-gray-400 mt-0.5">{item.tipo_documento}: {item.numero_documento}</p>
+    </div>
+  );
 
   return (
     <div className="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 animate-in fade-in duration-500 pb-24">
       {/* Header Area */}
       <div className="flex items-center gap-4">
         <button 
-          onClick={() => navigate('/agendamiento')}
+          onClick={handleVolver}
           className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-500 hover:text-[#2563EB] hover:bg-blue-50 transition-all shadow-sm"
         >
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Crear Agendamiento <span className="text-[#2563EB]">Método 2</span></h1>
-          <p className="text-gray-500 font-medium">Búsqueda por ingreso y selección de servicio directo.</p>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Programar Visita <span className="text-[#2563EB]">por Autorización</span></h1>
+          <p className="text-gray-500 font-medium">Búsqueda por código de autorización y validación de sesiones.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* COLUMNA IZQUIERDA: BUSQUEDA Y PACIENTE */}
+        {/* COLUMNA IZQUIERDA: BUSQUEDA Y OBSERVACIONES */}
         <div className="lg:col-span-4 space-y-6">
           
-          {/* CARD: BUSQUEDA DE INGRESO */}
+          {/* CARD: BUSQUEDA DE AUTORIZACION */}
           <div className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm relative overflow-visible z-30">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2563EB] rounded-l-[2.5rem]"></div>
             <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
               <Search size={14} />
-              Localizar por Número de Ingreso
+              Localizar por Autorización
             </h3>
             
-            <div className="relative">
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-2 ml-1">Número de Ingreso (Obligatorio)</label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  placeholder="Ej. 1001, 1004..."
-                  value={ingresoBusqueda}
-                  onChange={(e) => setIngresoBusqueda(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-transparent focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all shadow-inner"
-                />
-                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <form onSubmit={handleBuscarAutorizacion} className="relative">
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-2 ml-1">Código de Autorización</label>
+              <div className="relative flex gap-2">
+                <div className="relative flex-1">
+                  <input 
+                    type="text" 
+                    placeholder="Ej. A-123456"
+                    value={autorizacionBusqueda}
+                    onChange={(e) => setAutorizacionBusqueda(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-transparent focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all shadow-inner uppercase"
+                  />
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                </div>
+                <button 
+                  type="submit"
+                  disabled={autorizacionBusqueda.trim().length < 3}
+                  className="bg-[#2563EB] hover:bg-[#1E40AF] text-white px-6 py-4 rounded-2xl font-black uppercase tracking-wider text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  Buscar
+                </button>
               </div>
+            </form>
 
-              {/* Resultados de búsqueda */}
-              {filteredIngresos.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 max-h-60 overflow-y-auto p-2 animate-in slide-in-from-top-2">
-                  {filteredIngresos.map(item => (
-                    <button
-                      key={item.id_ingreso}
-                      onClick={() => handleSelectIngreso(item)}
-                      className="w-full text-left p-3 hover:bg-blue-50 rounded-xl transition-all group border-b border-gray-50 last:border-0"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-sm font-black text-gray-900 group-hover:text-[#2563EB]">{item.nombre_paciente}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5 tracking-wider">CC: {item.identificacion}</p>
-                        </div>
-                        <span className="text-[11px] font-black text-white bg-[#2563EB] px-2 py-1 rounded-lg shadow-sm">
-                          ING: {item.ingreso}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+            {/* Info de estado de búsqueda */}
+            {isLoadingServicios && (
+              <div className="mt-6 flex items-center justify-center p-4 bg-blue-50/50 rounded-2xl">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-6 h-6 border-2 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Buscando servicios...</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Info del Paciente Seleccionado */}
-            {ingresoSeleccionado && (
-              <div className="mt-8 space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-[1.5rem]">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-[#2563EB] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-                      <User size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-gray-900 leading-none">{ingresoSeleccionado.nombre_paciente}</h4>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mt-1 tracking-wider">Identificación: {ingresoSeleccionado.identificacion}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white p-3 rounded-xl border border-blue-100/50">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Ingreso</p>
-                      <p className="text-xs font-bold text-[#2563EB]"># {ingresoSeleccionado.ingreso}</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-xl border border-blue-100/50">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Autorización</p>
-                      <p className="text-xs font-bold text-[#16A34A] truncate">{ingresoSeleccionado.autorizacion}</p>
-                    </div>
-                  </div>
+            {isErrorServicios && (
+              <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={18} />
+                <div>
+                  <p className="text-sm font-bold text-red-800">Error en la búsqueda</p>
+                  <p className="text-xs text-red-600 mt-1">{error?.response?.data?.message || 'No se pudo obtener información.'}</p>
                 </div>
-                
-                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl">
-                  <ShieldCheck size={16} className="text-[#16A34A]" />
-                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">Paciente cargado automáticamente</span>
+              </div>
+            )}
+
+            {!isLoadingServicios && autorizacionBuscada && serviciosPendientes.length === 0 && !isErrorServicios && (
+              <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
+                <Info className="text-amber-500 mt-0.5 flex-shrink-0" size={18} />
+                <div>
+                  <p className="text-sm font-bold text-amber-800">Sin servicios disponibles</p>
+                  <p className="text-xs text-amber-600 mt-1">No se encontraron servicios con sesiones pendientes para esta autorización.</p>
+                </div>
+              </div>
+            )}
+
+            {!isLoadingServicios && serviciosPendientes.length > 0 && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-start gap-3 animate-in fade-in zoom-in-95 duration-300">
+                <ShieldCheck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
+                <div>
+                  <p className="text-sm font-bold text-green-800">Servicios Encontrados</p>
+                  <p className="text-xs font-medium text-green-700 mt-1">Se encontraron {serviciosPendientes.length} servicios con cupo disponible.</p>
                 </div>
               </div>
             )}
@@ -196,7 +207,7 @@ const CrearAgendamientoDos = () => {
             </h3>
             <textarea
               rows={5}
-              placeholder="Escribe aquí detalles adicionales para el profesional..."
+              placeholder="Escribe aquí detalles adicionales para el profesional (Llamar al llegar, timbre dañado...)"
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm font-medium resize-none"
@@ -207,20 +218,20 @@ const CrearAgendamientoDos = () => {
         {/* COLUMNA DERECHA: SELECCION DE SERVICIO Y AGENDAMIENTO */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm relative">
+          <div className="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm relative z-20">
             <h3 className="text-lg font-black text-gray-900 tracking-tight flex items-center gap-2 mb-8">
               <Stethoscope size={24} className="text-[#2563EB]" />
-              Detalles del Agendamiento
+              Detalles de la Visita
             </h3>
 
-            {!ingresoSeleccionado ? (
+            {!autorizacionBuscada || serviciosPendientes.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 border-2 border-dashed border-gray-100 rounded-[2rem]">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                  <Info size={32} />
+                  <Activity size={32} />
                 </div>
                 <div>
-                  <p className="text-gray-400 font-bold">Selecciona un ingreso para habilitar el formulario</p>
-                  <p className="text-gray-300 text-xs mt-1">Usa el buscador en la columna de la izquierda</p>
+                  <p className="text-gray-400 font-bold">Busca una autorización para ver los servicios</p>
+                  <p className="text-gray-300 text-xs mt-1">Solo se mostrarán servicios que tengan sesiones pendientes</p>
                 </div>
               </div>
             ) : (
@@ -229,72 +240,85 @@ const CrearAgendamientoDos = () => {
                 {/* SELECCION DE SERVICIO */}
                 <div className="grid grid-cols-1 gap-6">
                   <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Servicio correspondiente (Cargados desde el Ingreso)</label>
-                    <div className="relative">
-                      <select
-                        value={servicioSeleccionado?.id_orden_servicio || ''}
-                        onChange={(e) => setServicioSeleccionado(disponibleServicios.find(s => s.id_orden_servicio === parseInt(e.target.value)))}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all appearance-none"
-                      >
-                        <option value="" disabled>Seleccione un servicio del ingreso...</option>
-                        {disponibleServicios.map(s => (
-                          <option key={s.id_orden_servicio} value={s.id_orden_servicio}>{s.nombre_servicio}</option>
-                        ))}
-                      </select>
-                      <Stethoscope className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2563EB]" size={20} />
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Servicio a Programar</label>
+                    <div className="space-y-3">
+                      {serviciosPendientes.map(srv => {
+                        const isSelected = servicioSeleccionado?.id_orden_servicio === srv.id_orden_servicio;
+                        return (
+                          <div 
+                            key={srv.id_orden_servicio}
+                            onClick={() => setServicioSeleccionado(srv)}
+                            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                              isSelected 
+                                ? 'border-[#2563EB] bg-blue-50 shadow-md transform scale-[1.01]' 
+                                : 'border-gray-100 bg-white hover:border-blue-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 rounded-full ${isSelected ? 'text-[#2563EB]' : 'text-gray-300'}`}>
+                                  {isSelected ? <CheckCircle2 size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-current" />}
+                                </div>
+                                <div>
+                                  <h4 className={`text-sm font-black ${isSelected ? 'text-[#2563EB]' : 'text-gray-900'}`}>
+                                    {srv.servicio?.nombre_servicio || srv.servicio?.nombre || `Servicio #${srv.id_servicio}`}
+                                  </h4>
+                                  <div className="flex flex-wrap items-center gap-3 mt-2">
+                                    <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-100 shadow-sm">
+                                      <Hash size={12} className="text-gray-400"/>
+                                      Orden: {srv.id_orden}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-100 shadow-sm">
+                                      <Clock size={12} className="text-gray-400"/>
+                                      Frecuencia: Cada {srv.frecuencia_dias} días
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* BADGES DE SESIONES */}
+                              <div className="flex flex-col items-end gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                                  Total: {srv.numero_sesiones}
+                                </span>
+                                <span className="text-[11px] font-black uppercase tracking-wider bg-blue-100 text-[#2563EB] px-2.5 py-1 rounded-md border border-blue-200">
+                                  Quedan: {srv.sesiones_pendientes}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
 
                 {/* SELECCION DE PERSONAL Y FECHA */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Profesional / Personal</label>
-                    <div className="relative">
-                      <select
-                        value={idPersonal}
-                        onChange={(e) => setIdPersonal(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all appearance-none"
-                      >
-                        <option value="" disabled>Seleccione un profesional...</option>
-                        {MOCK_PERSONAL.map(p => (
-                          <option key={p.id_personal} value={p.id_personal}>{p.nombre_completo} ({p.especialidad})</option>
-                        ))}
-                      </select>
-                      <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2563EB]" size={20} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Fecha y Hora Programada</label>
-                    <div className="relative">
-                      <input
-                        type="datetime-local"
-                        value={fechaProgramada}
-                        onChange={(e) => setFechaProgramada(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all"
-                      />
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2563EB]" size={20} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* RESUMEN DE SELECCION */}
                 {servicioSeleccionado && (
-                  <div className="mt-8 p-6 bg-gray-50 border border-gray-100 rounded-[2rem] border-l-4 border-l-[#2563EB]">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Resumen del Servicio Seleccionado</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 text-sm font-medium">Servicio:</span>
-                        <span className="text-gray-900 text-sm font-black">{servicioSeleccionado.nombre_servicio}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 text-sm font-medium">Sesiones Contratadas:</span>
-                        <span className="text-[#2563EB] text-sm font-black px-3 py-1 bg-blue-50 rounded-lg">{servicioSeleccionado.numero_sesiones}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 text-sm font-medium">Frecuencia Sugerida:</span>
-                        <span className="text-gray-900 text-sm font-bold">Cada {servicioSeleccionado.frecuencia_dias} días</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100 animate-in slide-in-from-top-4">
+                    <div>
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Profesional / Personal</label>
+                      <AsyncSearchSelect
+                        useQueryHook={usePersonalBusqueda}
+                        placeholder="Buscar profesional..."
+                        onSelect={(item) => setProfesional(item)}
+                        renderOption={renderPersonalOption}
+                        valueDisplay={profesional ? `${profesional.nombre_completo} (${profesional.tipo_documento}: ${profesional.numero_documento})` : ''}
+                        onClear={() => setProfesional(null)}
+                        icon={UserCheck}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Fecha y Hora de la Visita</label>
+                      <div className="relative">
+                        <input
+                          type="datetime-local"
+                          value={fechaProgramada}
+                          onChange={(e) => setFechaProgramada(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 focus:outline-none focus:bg-white focus:border-[#2563EB]/50 focus:ring-4 focus:ring-[#2563EB]/10 rounded-2xl text-sm font-bold transition-all"
+                        />
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2563EB]" size={20} />
                       </div>
                     </div>
                   </div>
@@ -308,18 +332,18 @@ const CrearAgendamientoDos = () => {
       {/* Floating Action Bar */}
       <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 p-4 px-8 z-40 flex justify-end gap-4 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)]">
         <button 
-          onClick={() => navigate('/agendamiento')}
+          onClick={handleVolver}
           className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all text-sm"
         >
           Cancelar
         </button>
         <button 
-          disabled={!ingresoSeleccionado || !servicioSeleccionado || !idPersonal || !fechaProgramada}
+          disabled={!servicioSeleccionado || !profesional || !fechaProgramada || programarMutation.isLoading}
           className="flex items-center gap-2 px-8 py-3 bg-[#16A34A] text-white rounded-xl font-bold hover:bg-[#15803d] transition-all shadow-lg shadow-green-500/30 text-sm disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
           onClick={handleGuardar}
         >
           <Save size={18} />
-          Guardar Agendamiento
+          {programarMutation.isLoading ? 'Guardando...' : 'Programar Visita'}
         </button>
       </div>
     </div>
@@ -327,3 +351,4 @@ const CrearAgendamientoDos = () => {
 };
 
 export default CrearAgendamientoDos;
+

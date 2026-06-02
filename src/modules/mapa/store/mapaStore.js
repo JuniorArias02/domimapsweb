@@ -11,7 +11,9 @@ export const MENU_IDS = {
   DETALLE_PACIENTE: 'DETALLE_PACIENTE',
   OPTIMIZADOR_GLOBAL: 'OPTIMIZADOR_GLOBAL',
   OPTIMIZADOR: 'OPTIMIZADOR',
-  CREAR_RUTAS: 'CREAR_RUTAS'
+  CREAR_RUTAS: 'CREAR_RUTAS',
+  VER_RUTAS: 'VER_RUTAS',
+  DETALLE_RUTA: 'DETALLE_RUTA'
 };
 
 // --- Estados Iniciales para Reset ---
@@ -62,6 +64,7 @@ const CLEAR_STATE = {
   mostrarRutasGlobales: false,
   mostrarOptimizador: false,
   mostrarCrearRutas: false,
+  mostrarVerRutas: false,
   activeMenuId: null,
   // Reset Filtros
   pacientesFilters: INITIAL_PACIENTES_FILTERS,
@@ -74,6 +77,7 @@ const CLEAR_STATE = {
   selectedComunas: [],
   filtroComunaId: '',
   selectedVisitasIds: [],
+  selectedRutaId: null,
   // Reset Optimización Local
   isComparingLocalRoute: false,
   localOptimizedRoute: [],
@@ -242,6 +246,25 @@ export const useMapaStore = create((set, get) => ({
   }),
   clearSelectedVisitas: () => set({ selectedVisitasIds: [] }),
   setSelectedVisitas: (ids) => set({ selectedVisitasIds: ids }),
+
+  // --- Lógica de Ver/Consultar Rutas ---
+  mostrarVerRutas: false,
+  toggleVerRutasMenu: () => set((state) => {
+    const isCurrentlyActive = state.mostrarVerRutas;
+    if (isCurrentlyActive) return { ...state, ...CLEAR_STATE };
+    
+    return {
+      ...state,
+      ...CLEAR_STATE,
+      mostrarVerRutas: true,
+      activeMenuId: MENU_IDS.VER_RUTAS
+    };
+  }),
+  selectedRutaId: null,
+  setSelectedRutaId: (id) => set((state) => ({
+    selectedRutaId: id,
+    ...(id ? { activeMenuId: MENU_IDS.DETALLE_RUTA } : { activeMenuId: MENU_IDS.VER_RUTAS })
+  })),
 
   // --- Lógica de Profesionales ---
   profesionalesFilters: INITIAL_PROFESIONALES_FILTERS,

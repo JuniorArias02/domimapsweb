@@ -46,5 +46,22 @@ export const agendamientoService = {
   listarAgendas: async (params = {}) => {
     const response = await api.get('agenda/listado-detallado', { params });
     return response.data;
+  },
+
+  /**
+   * Consultar los servicios pendientes según la Autorización
+   */
+  obtenerPendientesPorAutorizacion: async (autorizacion) => {
+    if (!autorizacion) return [];
+    const response = await api.get('ordenes-servicio/pendientes-por-autorizacion', { params: { autorizacion } });
+    return response.data?.data || [];
+  },
+
+  /**
+   * Programar la visita domiciliaria validando sesiones
+   */
+  programarVisita: async (data) => {
+    const response = await api.post('visitas-domiciliarias/por-orden-servicio', data);
+    return response.data;
   }
 };

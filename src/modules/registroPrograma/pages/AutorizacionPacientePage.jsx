@@ -11,7 +11,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Plus,
-  Eye
+  Eye,
+  CalendarPlus
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAutorizacionesPacienteQuery, useCrearAutorizacionPacienteMutation } from '../queries/useAutorizacionesPacienteQuery';
@@ -275,13 +276,32 @@ export default function AutorizacionPacientePage() {
                       </span>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <button 
-                        onClick={() => abrirModalOrdenes(auth.ingreso)}
-                        className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all active:scale-90"
-                        title="Ver Órdenes Médicas"
-                      >
-                        <Eye size={16} />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={() => {
+                            if (auth.autorizacion) {
+                              navigate('/agendamiento/nueva-dos', { state: { autorizacion: auth.autorizacion, id_paciente: id } });
+                            } else {
+                              Swal.fire({
+                                title: 'Sin Autorización',
+                                text: 'Este registro no tiene un código de autorización válido.',
+                                icon: 'warning'
+                              });
+                            }
+                          }}
+                          className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                          title="Programar Visita"
+                        >
+                          <CalendarPlus size={16} />
+                        </button>
+                        <button 
+                          onClick={() => abrirModalOrdenes(auth.ingreso)}
+                          className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all active:scale-90"
+                          title="Ver Órdenes Médicas"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

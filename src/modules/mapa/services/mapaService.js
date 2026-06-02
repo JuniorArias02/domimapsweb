@@ -126,4 +126,33 @@ export const obtenerServicios = async () => {
 export const obtenerVisitasProgramadas = async (params = {}) => {
   const response = await api.get('/mapas/visitas-programadas', { params });
   return response.data;
+};
+
+/**
+ * Create a new route mapping assigned professional, date, and visit stops
+ * @param {Object} payload - { id_personal, fecha_ruta, visitas: [{ id_visita, orden_visita }] }
+ * @returns {Promise} Resolves to the created route response
+ */
+export const crearRuta = async (payload) => {
+  const response = await api.post('/rutas', payload);
+  return response.data;
+};
+
+/**
+ * Obtener listado de todas las rutas creadas
+ * @returns {Promise}
+ */
+export const obtenerRutas = async () => {
+  const response = await api.get('/rutas');
+  return response.data;
+};
+
+/**
+ * Obtener el detalle de una ruta específica
+ * @param {number|string} id - ID de la ruta
+ * @returns {Promise}
+ */
+export const obtenerDetalleRuta = async (id) => {
+  const response = await api.get(`/rutas/${id}`);
+  return response.data;
 };

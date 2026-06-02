@@ -84,8 +84,8 @@ export default function AgendamientoListPage() {
             onClick={() => navigate('/agendamiento/nueva-dos')}
             className="flex items-center justify-center gap-2 bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-blue-50 px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 text-sm uppercase tracking-wider shadow-sm"
           >
-            <Plus size={18} />
-            Método 2
+            <Activity size={18} />
+            Visita por Autorización
           </button>
           <button 
             onClick={() => navigate('/agendamiento/nueva')}

@@ -16,7 +16,10 @@ export const useMapaCenter = ({
   selectedComunas,
   mostrarCrearRutas,
   visitasProgramadas,
-  crearRutasFilters
+  crearRutasFilters,
+  mostrarVerRutas,
+  selectedRutaId,
+  routeVisitas = []
 }) => {
   const [currentCenter, setCurrentCenter] = useState(INITIAL_POSITION);
   const [currentZoom, setCurrentZoom] = useState(13);
@@ -27,6 +30,7 @@ export const useMapaCenter = ({
   const lastComunaId = useRef(null);
   const lastPersonalId = useRef(null);
   const lastServicioId = useRef(null);
+  const lastRutaId = useRef(null);
   
   const { selectedPacienteInfo } = useMapaStore();
 
@@ -40,6 +44,20 @@ export const useMapaCenter = ({
       setCurrentZoom(16);
       lastSelectedPacienteId.current = selectedPacienteId;
       return;
+    }
+
+    // 1.5. Prioridad: Ruta seleccionada
+    if (mostrarVerRutas && selectedRutaId && routeVisitas.length > 0 && selectedRutaId !== lastRutaId.current) {
+      const firstVisit = routeVisitas.find(v => v.paciente?.latitud && v.paciente?.longitud);
+      if (firstVisit) {
+        const newCenter = [parseFloat(firstVisit.paciente.latitud), parseFloat(firstVisit.paciente.longitud)];
+        setCurrentCenter(newCenter);
+        setCurrentZoom(14);
+        lastRutaId.current = selectedRutaId;
+        return;
+      }
+    } else if (!selectedRutaId) {
+      lastRutaId.current = null;
     }
 
     // 2. Comuna seleccionada
@@ -110,7 +128,10 @@ export const useMapaCenter = ({
     mostrarCrearRutas,
     visitasProgramadas,
     crearRutasFilters.id_personal,
-    crearRutasFilters.id_servicio
+    crearRutasFilters.id_servicio,
+    mostrarVerRutas,
+    selectedRutaId,
+    routeVisitas
   ]);
 
   return { center: currentCenter, zoom: currentZoom, INITIAL_POSITION };

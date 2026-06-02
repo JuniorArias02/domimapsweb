@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agendamientoService } from '../services/agendamientoService';
 
 /**
@@ -11,5 +11,32 @@ export const useAgendasQuery = (params) => {
     queryFn: () => agendamientoService.listarAgendas(params),
     keepPreviousData: true,
     staleTime: 5000, // 5 segundos de cache
+  });
+};
+
+/**
+ * Hook para consultar los servicios según autorización
+ */
+export const usePendientesPorAutorizacionQuery = (autorizacion) => {
+  return useQuery({
+    queryKey: ['pendientes-autorizacion', autorizacion],
+    queryFn: () => agendamientoService.obtenerPendientesPorAutorizacion(autorizacion),
+    enabled: Boolean(autorizacion && autorizacion.length >= 3),
+    retry: false
+  });
+};
+
+/**
+ * Hook para programar la visita
+ */
+export const useProgramarVisitaMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => agendamientoService.programarVisita(data),
+    onSuccess: () => {
+      // Invalidar query de agendas y otros relacionados
+      queryClient.invalidateQueries(['agendas']);
+      queryClient.invalidateQueries(['pendientes-autorizacion']);
+    }
   });
 };
