@@ -32,12 +32,12 @@ export const CrearRutasLayer = ({ isRulerActive }) => {
             <div class="absolute w-8 h-8 bg-indigo-500/25 rounded-full animate-ping"></div>
           ` : ''}
           <div style="
-            background-color: ${isSelected ? '#4F46E5' : '#C7D2FE'}; 
+            background-color: ${isSelected ? '#4F46E5' : '#312E81'}; 
             width: ${isSelected ? '26px' : '18px'}; 
             height: ${isSelected ? '26px' : '18px'}; 
             border-radius: 50%; 
             border: 2px solid white; 
-            box-shadow: 0 0 10px ${isSelected ? 'rgba(79, 70, 229, 0.4)' : 'rgba(199, 210, 254, 0.3)'};
+            box-shadow: 0 0 10px ${isSelected ? 'rgba(79, 70, 229, 0.4)' : 'rgba(49, 46, 129, 0.4)'};
             display: flex;
             align-items: center;
             justify-content: center;

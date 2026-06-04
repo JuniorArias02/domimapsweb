@@ -29,15 +29,15 @@ export const useMapIcons = () => {
       html: `
         <div class="relative flex items-center justify-center">
           ${isSelected ? `
-            <div class="absolute w-8 h-8 bg-blue-500/30 rounded-full animate-ping"></div>
+            <div class="absolute w-8 h-8 bg-indigo-900/40 rounded-full animate-ping"></div>
           ` : ''}
           <div style="
-            background-color: ${isSelected ? '#2563EB' : '#60A5FA'}; 
-            width: ${isSelected ? '16px' : '12px'}; 
-            height: ${isSelected ? '16px' : '12px'}; 
+            background-color: ${isSelected ? '#1E1B4B' : '#312E81'}; 
+            width: ${isSelected ? '16px' : '14px'}; 
+            height: ${isSelected ? '16px' : '14px'}; 
             border-radius: 50%; 
             border: 2px solid white; 
-            box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 0 8px rgba(49, 46, 129, 0.6);
             transition: all 0.3s;
           "></div>
         </div>

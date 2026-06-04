@@ -19,15 +19,15 @@ export const itemsMenuSidebar = [
     storeKeyActivo: 'mostrarProfesionales',
     storeKeyToggle: 'toggleMostrarProfesionales'
   },
-  {
-    id: 'rutasGlobales',
-    etiqueta: 'Ruta Paciente',
-    descripcion: 'Optimización Global',
-    icono: Globe,
-    colorKey: 'blue600',
-    storeKeyActivo: 'mostrarRutasGlobales',
-    storeKeyToggle: 'toggleRutasGlobalesMenu'
-  },
+  // {
+  //   id: 'rutasGlobales',
+  //   etiqueta: 'Ruta Paciente',
+  //   descripcion: 'Optimización Global',
+  //   icono: Globe,
+  //   colorKey: 'blue600',
+  //   storeKeyActivo: 'mostrarRutasGlobales',
+  //   storeKeyToggle: 'toggleRutasGlobalesMenu'
+  // },
   {
     id: 'optimizador',
     etiqueta: 'Optimizador',

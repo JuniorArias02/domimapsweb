@@ -83,7 +83,7 @@ export const useMapaCenter = ({
 
     // 3. Profesionales: Solo centrar si cambia el id_profesional o es la primera carga con datos
     if (mostrarProfesionales && visitas.length > 0) {
-      const firstVisit = visitas.find(v => v.latitud && v.longitud);
+      const firstVisit = visitas.find(v => v.latitud && v.longitud);  
       if (firstVisit && profesionalesFilters?.id_profesional !== lastProfesionalId.current) {
         const newCenter = [parseFloat(firstVisit.latitud), parseFloat(firstVisit.longitud)];
         setCurrentCenter(newCenter);

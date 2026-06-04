@@ -8,9 +8,10 @@ import {
   X, Search, Filter, ChevronLeft, ChevronRight, 
   MapPin, Minimize2, Power, Calendar, User, Check,
   ChevronDown, Activity, Route, CheckSquare, Square,
-  Save
+  Save, Download
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import api from '../../../api/api';
 
 export default function MapCrearRutasMenu() {
   const { 
@@ -230,6 +231,36 @@ export default function MapCrearRutasMenu() {
     });
   };
 
+  const descargarExcelRutas = async () => {
+    try {
+        const response = await api.get('/rutas/exportar/excel', {
+            responseType: 'blob', // ¡ESTO ES CRUCIAL! Sin esto, el archivo se rompe.
+        });
+
+        // Crear una URL temporal para forzar la descarga en el navegador
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'rutas_export.xlsx'); 
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Error al descargar el Excel", error);
+        Swal.fire({
+          title: 'Error',
+          text: 'Ocurrió un error al intentar descargar el Excel de rutas.',
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          customClass: {
+            popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+            confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+          },
+          buttonsStyling: false
+        });
+    }
+  };
+
   if (!mostrarCrearRutas) return null;
 
   return (
@@ -261,6 +292,13 @@ export default function MapCrearRutasMenu() {
           <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Visitas Programadas</p>
         </div>
         <div className="flex items-center gap-1">
+          <button 
+            onClick={descargarExcelRutas}
+            title="Exportar a Excel"
+            className="text-gray-400 hover:text-green-600 transition-colors p-2 rounded-xl hover:bg-green-50"
+          >
+            <Download size={18} />
+          </button>
           <button 
             onClick={() => setActiveMenu(null)}
             title="Minimizar panel"

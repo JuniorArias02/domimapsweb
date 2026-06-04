@@ -51,8 +51,6 @@ const CrearAgendamientoDos = () => {
   const handleGuardar = async () => {
     if (!servicioSeleccionado || !profesional || !fechaProgramada) return;
 
-    // Obtenemos el id_paciente del state (pasado desde la tabla) 
-    // Si no está, intentamos extraerlo del servicio (por si el backend lo llegara a mandar)
     const idPaciente = location.state?.id_paciente || servicioSeleccionado.id_paciente;
 
     if (!idPaciente) {
