@@ -20,3 +20,18 @@ export const useBuscarPersonal = (q) => {
   });
 };
 
+export const usePersonalEstadisticas = (id_personal) => {
+  return useQuery({
+    queryKey: ['personal-estadisticas', id_personal],
+    queryFn: () => personalService.getEstadisticas(id_personal),
+    enabled: Boolean(id_personal),
+  });
+};
+
+export const usePersonalIngresos = (id_personal) => {
+  return useQuery({
+    queryKey: ['personal-ingresos', id_personal],
+    queryFn: () => personalService.getIngresos(id_personal),
+    enabled: Boolean(id_personal),
+  });
+};

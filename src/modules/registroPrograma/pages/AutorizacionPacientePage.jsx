@@ -27,6 +27,8 @@ export default function AutorizacionPacientePage() {
 
   const pacienteDesdeState = location.state?.paciente;
 
+  const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
+
   // Modal State for Medical Orders
   const [modalOrdenesAbierto, setModalOrdenesAbierto] = useState(false);
   const [idIngresoSeleccionado, setIdIngresoSeleccionado] = useState(null);
@@ -79,6 +81,12 @@ export default function AutorizacionPacientePage() {
 
   const paciente = pacienteDesdeState || pacienteData?.data || pacienteData || null;
   const autorizaciones = autorizacionesData?.data || [];
+  
+  const autorizacionesFiltradas = autorizaciones.filter(auth => {
+    if (estadoFiltro === 'TODOS') return true;
+    return auth.estado === estadoFiltro;
+  });
+
   const mostrarCargandoPaciente = !paciente && isLoadingPaciente;
   const nombreAseguradora = paciente?.aseguradora?.nombre || paciente?.nombre_aseguradora;
 
@@ -190,10 +198,21 @@ export default function AutorizacionPacientePage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-wrap items-center justify-between px-2 gap-4">
         <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-          {isLoadingAutorizaciones ? 'Consultando autorizaciones...' : `${autorizaciones.length} registros asociados`}
+          {isLoadingAutorizaciones ? 'Consultando autorizaciones...' : `${autorizacionesFiltradas.length} registros asociados`}
         </div>
+        <select
+          value={estadoFiltro}
+          onChange={(e) => setEstadoFiltro(e.target.value)}
+          className="text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl px-4 py-2 outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+        >
+          <option value="TODOS">Todos los estados</option>
+          <option value="VIGENTE">Vigente</option>
+          <option value="SUSPENDIDA">Suspendida</option>
+          <option value="VENCIDA">Vencida</option>
+          <option value="FINALIZADA">Finalizada</option>
+        </select>
       </div>
 
       {/* Tabla de Autorizaciones */}
@@ -242,8 +261,8 @@ export default function AutorizacionPacientePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {autorizaciones.length > 0 ? (
-                autorizaciones.map((auth, index) => (
+              {autorizacionesFiltradas.length > 0 ? (
+                autorizacionesFiltradas.map((auth, index) => (
                   <tr key={index} className="group hover:bg-blue-50/30 transition-colors">
                     <td className="px-8 py-5">
                       <span className="text-sm font-black text-gray-900 bg-gray-100 px-3 py-1 rounded-xl">

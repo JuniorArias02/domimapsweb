@@ -9,5 +9,15 @@ export const personalService = {
   buscarPersonal: async (q) => {
     const { data } = await api.get('/personal/buscar', { params: { q, limit: 5 } });
     return data;
+  },
+
+  getEstadisticas: async (id_personal) => {
+    const { data } = await api.get(`/personal/${id_personal}/estadisticas`);
+    return data;
+  },
+
+  getIngresos: async (id_personal) => {
+    const { data } = await api.get(`/personal/${id_personal}/ingresos`);
+    return data;
   }
 };

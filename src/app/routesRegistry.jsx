@@ -19,6 +19,7 @@ import { rutasMapa }      from '../modules/mapa/routes/mapaRoutes';
 import { rutasPacientes }   from '../modules/pacientes/routes/pacientesRoutes';
 import { rutasAgendamiento } from '../modules/agendamiento/routes/agendamientoRoutes';
 import { rutasAgendamientoPaciente } from '../modules/registroPrograma/routes/registroProgramaRoutes';
+import { rutasPersonal } from '../modules/personal/routes/personalRoutes';
 // import { rutasCitas }       from '../modules/citas/routes/citasRoutes';
 // import { rutasUsuarios }    from '../modules/usuarios/routes/usuariosRoutes';
 // ──────────────────────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ export const rutasProtegidas = [
   ...rutasPacientes,
   ...rutasAgendamiento,
   ...rutasAgendamientoPaciente,
+  ...rutasPersonal,
   // ...rutasCitas,
   // ...rutasUsuarios,
   // ────────────────────────────────────────────────────────────────────────
