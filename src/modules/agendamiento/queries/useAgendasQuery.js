@@ -40,3 +40,24 @@ export const useProgramarVisitaMutation = () => {
     }
   });
 };
+
+/**
+ * Hook para obtener el historial de tratamientos de un paciente para continuidad
+ */
+export const useHistorialTratamientosQuery = (idPaciente, idServicio = null) => {
+  return useQuery({
+    queryKey: ['historial-tratamientos', idPaciente, idServicio],
+    queryFn: () => agendamientoService.obtenerHistorialPaciente(idPaciente, idServicio),
+    enabled: Boolean(idPaciente && idServicio),
+    staleTime: 1000 * 60 * 5, // 5 min cache
+  });
+};
+
+/**
+ * Hook para buscar continuidades avanzadas
+ */
+export const useBuscarContinuidadAvanzadaMutation = () => {
+  return useMutation({
+    mutationFn: (filtros) => agendamientoService.buscarContinuidadAvanzada(filtros)
+  });
+};

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Search, ShieldCheck, ExternalLink, 
   Plus, Trash2, User, Stethoscope, Hash, Save, Calendar
@@ -11,10 +11,12 @@ import {
   useServiciosBusqueda, 
   usePersonalBusqueda 
 } from '../queries/useBusquedaQueries';
+import { useHistorialTratamientosQuery } from '../queries/useAgendasQuery';
 
 export default function CrearAgendamientoPage() {
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const idPacienteDesdeState = location.state?.id_paciente;
 
   // Estados
   const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
@@ -27,14 +29,18 @@ export default function CrearAgendamientoPage() {
       servicio: null, // Guardaremos el objeto completo del servicio seleccionado
       profesional: null, // Guardaremos el objeto completo del personal seleccionado
       sesiones: '',
-      fecha_inicio: ''
+      frecuencia_dias: '',
+      fecha_inicio: '',
+      id_orden_servicio_anterior: ''
     }
   ]);
+
+  const { data: historialTratamientos } = useHistorialTratamientosQuery(ingresoSeleccionado?.id_paciente || idPacienteDesdeState);
 
   const handleAgregarServicio = () => {
     setServicios([
       ...servicios, 
-      { id: Date.now(), servicio: null, profesional: null, sesiones: '', fecha_inicio: '' }
+      { id: Date.now(), servicio: null, profesional: null, sesiones: '', frecuencia_dias: '', fecha_inicio: '', id_orden_servicio_anterior: '' }
     ]);
   };
 
@@ -57,13 +63,15 @@ export default function CrearAgendamientoPage() {
       observaciones: observaciones,
       servicios: servicios.map(s => ({
         id_servicio: s.servicio?.id_servicio || null,
-        id_personal: s.profesional?.id_personal || null,
+        id_profesional_asignado: s.profesional?.id_personal || null,
         fecha_inicio: s.fecha_inicio,
-        sesiones: parseInt(s.sesiones, 10) || null
+        numero_sesiones: parseInt(s.sesiones, 10) || null,
+        frecuencia_dias: parseInt(s.frecuencia_dias, 10) || null,
+        id_orden_servicio_anterior: s.id_orden_servicio_anterior ? parseInt(s.id_orden_servicio_anterior, 10) : null
       }))
     };
 
-
+    console.log("Payload a enviar:", payload);
   };
 
   // Renderers para las opciones del Autocomplete
@@ -259,6 +267,43 @@ export default function CrearAgendamientoPage() {
                           onChange={(e) => handleChangeServicio(servicio.id, 'sesiones', e.target.value)}
                           className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm font-medium"
                         />
+                      </div>
+                    </div>
+
+                    {/* Frecuencia Dias */}
+                    <div className="md:col-span-6 xl:col-span-4">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Frecuencia (Días)</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                          <Calendar size={16} />
+                        </div>
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Ej. 2"
+                          value={servicio.frecuencia_dias}
+                          onChange={(e) => handleChangeServicio(servicio.id, 'frecuencia_dias', e.target.value)}
+                          className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tratamiento Anterior (Continuidad) */}
+                    <div className="md:col-span-12">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Continuidad de Tratamiento (Opcional)</label>
+                      <div className="relative">
+                        <select
+                          value={servicio.id_orden_servicio_anterior || ''}
+                          onChange={(e) => handleChangeServicio(servicio.id, 'id_orden_servicio_anterior', e.target.value)}
+                          className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm font-medium text-gray-700"
+                        >
+                          <option value="">-- Tratamiento Nuevo (Sin continuidad) --</option>
+                          {historialTratamientos && historialTratamientos.map(historial => (
+                            <option key={historial.id_orden_servicio} value={historial.id_orden_servicio}>
+                              {historial.nombre_servicio} (Ingreso: {historial.id_ingreso} - Fecha: {historial.fecha_ingreso})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 

@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   Plus,
   Eye,
-  CalendarPlus
+  CalendarPlus,
+  Stethoscope
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAutorizacionesPacienteQuery, useCrearAutorizacionPacienteMutation } from '../queries/useAutorizacionesPacienteQuery';
@@ -132,13 +133,22 @@ export default function AutorizacionPacientePage() {
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Volver al Registro
         </button>
-        <button
-          onClick={() => setModalFormAbierto(true)}
-          className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-xs uppercase tracking-wider"
-        >
-          <Plus size={16} />
-          Nueva Autorización
-        </button>
+        <div className="flex items-center gap-3">
+          {/* <button
+            onClick={() => navigate('/agendamiento/nueva', { state: { id_paciente: id } })}
+            className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-2xl font-bold transition-all active:scale-95 text-xs uppercase tracking-wider shadow-sm"
+          >
+            <Stethoscope size={16} />
+            Crear Orden Médica
+          </button> */}
+          <button
+            onClick={() => setModalFormAbierto(true)}
+            className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1E40AF] text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-xs uppercase tracking-wider"
+          >
+            <Plus size={16} />
+            Nueva Autorización
+          </button>
+        </div>
       </div>
 
       {/* Cabecera / Info del Paciente */}
@@ -296,6 +306,13 @@ export default function AutorizacionPacientePage() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {/* <button 
+                          onClick={() => navigate('/agendamiento/nueva', { state: { ingreso: auth.ingreso, id_paciente: id } })}
+                          className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+                          title="Crear Orden Médica"
+                        >
+                          <Stethoscope size={16} />
+                        </button> */}
                         <button 
                           onClick={() => {
                             if (auth.autorizacion) {
@@ -358,6 +375,7 @@ export default function AutorizacionPacientePage() {
         onCerrar={() => setModalFormAbierto(false)}
         onGuardar={manejarGuardarAutorizacion}
         paciente={paciente}
+        idPaciente={id}
         cargando={crearMutation.isPending}
       />
     </div>

@@ -4,8 +4,12 @@ import { useRutasQuery } from '../queries/useRutasQuery';
 import { useDetalleRutaQuery } from '../queries/useDetalleRutaQuery';
 import { 
   X, Search, Minimize2, Power, Route, Map, User, Calendar, 
-  ArrowLeft, MapPin, Activity, CheckCircle, ClipboardList, Info
+  ArrowLeft, MapPin, Activity, CheckCircle, ClipboardList, Info,
+  Trash2, CheckSquare
 } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { useEliminarRutaMutation } from '../queries/useEliminarRutaMutation';
+import { useAsignarRutaMutation } from '../queries/useAsignarRutaMutation';
 
 export default function MapVerRutasMenu() {
   const { 
@@ -29,6 +33,106 @@ export default function MapVerRutasMenu() {
   const { data: rutasResult, isLoading: loadingList, isError: listError } = useRutasQuery();
   // Fetch detailed route if selected
   const { data: detailResult, isLoading: loadingDetail, isError: detailError } = useDetalleRutaQuery(selectedRutaId);
+
+  const eliminarRutaMutation = useEliminarRutaMutation();
+  const asignarRutaMutation = useAsignarRutaMutation();
+
+  const handleEliminar = (id) => {
+    Swal.fire({
+      title: '¿Eliminar Ruta?',
+      text: 'Esta acción desvinculará las visitas, que quedarán disponibles nuevamente. No se puede eliminar una ruta finalizada.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+        confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        cancelButton: 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs transition-all active:scale-95 cursor-pointer',
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        eliminarRutaMutation.mutate(id, {
+          onSuccess: () => {
+            Swal.fire({
+              title: 'Eliminada',
+              text: 'La ruta ha sido eliminada correctamente.',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              customClass: {
+                popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+                confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+              },
+              buttonsStyling: false
+            });
+            setSelectedRutaId(null);
+          },
+          onError: (error) => {
+            Swal.fire({
+              title: 'Error',
+              text: error?.response?.data?.message || 'No se pudo eliminar la ruta.',
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              customClass: {
+                popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+                confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+              },
+              buttonsStyling: false
+            });
+          }
+        });
+      }
+    });
+  };
+
+  const handleAsignar = (id) => {
+    Swal.fire({
+      title: '¿Confirmar Diseño?',
+      text: 'La ruta pasará a estado ASIGNADA y estará lista para su ejecución.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+        cancelButton: 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs transition-all active:scale-95 cursor-pointer',
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        asignarRutaMutation.mutate(id, {
+          onSuccess: () => {
+            Swal.fire({
+              title: 'Confirmada',
+              text: 'La ruta ahora está en estado ASIGNADA.',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              customClass: {
+                popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+                confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+              },
+              buttonsStyling: false
+            });
+          },
+          onError: (error) => {
+            Swal.fire({
+              title: 'Error',
+              text: error?.response?.data?.message || 'No se pudo confirmar la ruta.',
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              customClass: {
+                popup: 'rounded-[2rem] font-bold text-gray-900 border border-gray-100 shadow-xl p-8',
+                confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95 outline-none border-none cursor-pointer',
+              },
+              buttonsStyling: false
+            });
+          }
+        });
+      }
+    });
+  };
 
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return 'No registrada';
@@ -281,6 +385,30 @@ export default function MapVerRutasMenu() {
                         {formatFecha(detailedRoute.fecha_ruta)}
                       </span>
                     </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
+                    {detailedRoute.estado === 'EN_DISENO' && (
+                      <button 
+                        onClick={() => handleAsignar(detailedRoute.id_ruta)}
+                        disabled={asignarRutaMutation.isPending}
+                        className="w-full flex items-center justify-center gap-1.5 p-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition-colors font-black uppercase text-[9px]"
+                      >
+                        <CheckSquare size={14} />
+                        Confirmar Diseño
+                      </button>
+                    )}
+                    {detailedRoute.estado !== 'FINALIZADA' && (
+                      <button 
+                        onClick={() => handleEliminar(detailedRoute.id_ruta)}
+                        disabled={eliminarRutaMutation.isPending}
+                        className={`${detailedRoute.estado !== 'EN_DISENO' ? 'col-span-2' : ''} w-full flex items-center justify-center gap-1.5 p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-colors font-black uppercase text-[9px]`}
+                      >
+                        <Trash2 size={14} />
+                        Eliminar Ruta
+                      </button>
+                    )}
                   </div>
                 </div>
 

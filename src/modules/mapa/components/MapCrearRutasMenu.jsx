@@ -62,6 +62,7 @@ export default function MapCrearRutasMenu() {
   // State for Route Creation Confirmation Modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [routeDate, setRouteDate] = useState('');
+  const [routeState, setRouteState] = useState('EN_DISENO');
   const [modalPersonalId, setModalPersonalId] = useState('');
   const [isModalDropdownOpen, setIsModalDropdownOpen] = useState(false);
   const [modalSearchTerm, setModalSearchTerm] = useState('');
@@ -177,6 +178,7 @@ export default function MapCrearRutasMenu() {
     const payload = {
       id_personal: Number(modalPersonalId),
       fecha_ruta: routeDate,
+      estado: routeState,
       visitas: selectedVisitasIds.map((id, index) => ({
         id_visita: Number(id),
         orden_visita: index + 1
@@ -194,12 +196,7 @@ export default function MapCrearRutasMenu() {
                 <div><span class="font-bold text-indigo-650">ID de Ruta Creada:</span> <span class="font-bold text-gray-800">${data?.data?.id_ruta || data?.id_ruta || 'N/A'}</span></div>
                 <div>• id_personal: <span class="font-bold text-gray-800">${modalPersonalId}</span> (${modalProfesionalSeleccionado?.nombre_completo})</div>
                 <div>• fecha_ruta: <span class="font-bold text-gray-800">${routeDate}</span></div>
-                <div>• estado: <span class="font-bold text-green-600">'EN_DISENO'</span></div>
-              </div>
-              
-              <div class="mt-3">
-                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Payload JSON de la Petición:</span>
-                <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] overflow-x-auto select-all max-h-36 custom-scrollbar">${JSON.stringify(payload, null, 2)}</pre>
+                <div>• estado: <span class="font-bold text-green-600">'${routeState}'</span></div>
               </div>
             </div>
           `,
@@ -642,13 +639,27 @@ export default function MapCrearRutasMenu() {
               </div>
 
               {/* Initial State / Estado */}
-              <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border border-gray-150/50">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">
                   Estado Inicial
-                </span>
-                <span className="text-[9px] font-black px-2.5 py-1 rounded-md uppercase bg-amber-50 text-amber-700 border border-amber-200">
-                  EN_DISENO
-                </span>
+                </label>
+                <div className="relative">
+                  <select 
+                    value={routeState}
+                    onChange={(e) => setRouteState(e.target.value)}
+                    className="w-full text-xs font-black p-3.5 pl-11 bg-gray-50 border border-gray-150 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:bg-white focus:border-indigo-500 transition-all text-gray-700 appearance-none cursor-pointer"
+                  >
+                    <option value="EN_DISENO">EN_DISENO</option>
+                    <option value="ASIGNADA">ASIGNADA</option>
+                    <option value="FINALIZADA">FINALIZADA</option>
+                  </select>
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500">
+                    <Activity size={18} />
+                  </div>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
               </div>
 
               {/* Visitas List */}

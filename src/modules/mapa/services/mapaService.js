@@ -155,4 +155,35 @@ export const obtenerRutas = async () => {
 export const obtenerDetalleRuta = async (id) => {
   const response = await api.get(`/rutas/${id}`);
   return response.data;
+};
+
+/**
+ * Editar una ruta existente (id_personal, fecha_ruta, visitas)
+ * @param {number|string} id - ID de la ruta
+ * @param {Object} payload - { id_personal, fecha_ruta, visitas: [{ id_visita, orden_visita }] }
+ * @returns {Promise}
+ */
+export const editarRuta = async (id, payload) => {
+  const response = await api.put(`/rutas/${id}`, payload);
+  return response.data;
+};
+
+/**
+ * Eliminar una ruta existente
+ * @param {number|string} id - ID de la ruta
+ * @returns {Promise}
+ */
+export const eliminarRuta = async (id) => {
+  const response = await api.delete(`/rutas/${id}`);
+  return response.data;
+};
+
+/**
+ * Asignar diseño de ruta (cambia estado de EN_DISENO a ASIGNADA)
+ * @param {number|string} id - ID de la ruta
+ * @returns {Promise}
+ */
+export const asignarRuta = async (id) => {
+  const response = await api.patch(`/rutas/${id}/asignar`);
+  return response.data;
 };

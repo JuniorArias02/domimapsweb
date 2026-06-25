@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import BuscadorProfesional from './BuscadorProfesional';
 import BuscadorServicio from './BuscadorServicio';
+import SelectorContinuidad from './SelectorContinuidad';
 import { useVerificarAutorizacionQuery } from '../queries/useVerificarAutorizacionQuery';
+import { useHistorialTratamientosQuery } from '../../agendamiento/queries/useAgendasQuery';
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -71,6 +73,7 @@ const SERVICIO_INICIAL = () => ({
   numero_sesiones: 1,
   frecuencia_dias: 1,
   fecha_inicio: new Date().toISOString().slice(0, 16),
+  id_orden_servicio_anterior: ''
 });
 
 export default function RegistroAutorizacionModal({ 
@@ -78,6 +81,7 @@ export default function RegistroAutorizacionModal({
   onCerrar, 
   onGuardar, 
   paciente, 
+  idPaciente: idPacienteProp,
   cargando 
 }) {
   const [autorizacion, setAutorizacion] = useState('');
@@ -90,6 +94,8 @@ export default function RegistroAutorizacionModal({
   // Debounce para verificar autorización en tiempo real sin saturar el backend
   const debouncedAutorizacion = useDebounce(autorizacion, 2000);
   const { data: verifData, isLoading: verifLoading } = useVerificarAutorizacionQuery(debouncedAutorizacion);
+
+  const idPaciente = idPacienteProp || paciente?.id_paciente || paciente?.id;
 
   useEffect(() => {
     if (abierto) {
@@ -240,13 +246,14 @@ export default function RegistroAutorizacionModal({
     const payload = {
       autorizacion,
       observacion,
-      id_paciente: paciente?.id_paciente || paciente?.id,
+      id_paciente: idPaciente,
       servicios: servicios.map(s => ({
         id_servicio: parseInt(s.id_servicio, 10),
         id_profesional: parseInt(s.id_profesional, 10),
         numero_sesiones: parseInt(s.numero_sesiones, 10),
         frecuencia_dias: parseInt(s.frecuencia_dias, 10),
         fecha_inicio: s.fecha_inicio.replace('T', ' '),
+        id_orden_servicio_anterior: s.id_orden_servicio_anterior ? parseInt(s.id_orden_servicio_anterior, 10) : null,
       }))
     };
 
@@ -537,6 +544,18 @@ export default function RegistroAutorizacionModal({
                       </div>
                       {erroresServicios[idx]?.fecha_inicio && <span className="text-[10px] font-bold text-red-500 ml-1 italic">{erroresServicios[idx].fecha_inicio}</span>}
                     </div>
+
+                    {/* Tratamiento Anterior (Continuidad) */}
+                    <div className="md:col-span-2 space-y-1.5">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Continuidad de Tratamiento (Opcional)</label>
+                      <SelectorContinuidad
+                        idPaciente={idPaciente}
+                        idServicio={srv.id_servicio}
+                        value={srv.id_orden_servicio_anterior}
+                        onChange={(e) => manejarCambioServicio(idx, e)}
+                      />
+                    </div>
+
 
                   </div>
 

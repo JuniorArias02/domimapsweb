@@ -12,6 +12,7 @@ export const useCrearRutaMutation = () => {
     onSuccess: () => {
       // Invalidate the query for scheduled visits so it updates dynamically
       queryClient.invalidateQueries({ queryKey: ['visitas_programadas_crear_rutas'] });
+      queryClient.invalidateQueries({ queryKey: ['rutas_listado'] });
     },
   });
 };

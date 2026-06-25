@@ -63,5 +63,26 @@ export const agendamientoService = {
   programarVisita: async (data) => {
     const response = await api.post('visitas-domiciliarias/por-orden-servicio', data);
     return response.data;
+  },
+
+  /**
+   * Obtener el historial de tratamientos (ordenes de servicio) de un paciente
+   * para evaluar la continuidad de los servicios médicos.
+   * @param {number|string} idPaciente
+   * @returns {Promise<Array>} Lista de tratamientos anteriores
+   */
+  obtenerHistorialPaciente: async (idPaciente, idServicio = null) => {
+    if (!idPaciente) return [];
+    const params = idServicio ? { id_servicio: idServicio } : {};
+    const response = await api.get(`ordenes-servicio/historial/paciente/${idPaciente}`, { params });
+    return response.data?.data || [];
+  },
+
+  /**
+   * Buscar continuidades históricas avanzadas
+   */
+  buscarContinuidadAvanzada: async (filtros) => {
+    const response = await api.get('ordenes-servicio/continuidad/buscar', { params: filtros });
+    return response.data?.data || [];
   }
 };
